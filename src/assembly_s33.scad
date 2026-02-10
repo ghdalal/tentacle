@@ -1,117 +1,165 @@
 // =============================================================
-// THE TENTACLE - FINAL CONSOLIDATED ASSEMBLY
+// THE TENTACLE - FINAL ASSEMBLY (RESTORED FLUSH BASE)
 // =============================================================
 // Overview
-// - Unified assembly at 1/3 scale (design units ~ mm / 3)
-// - Y is used as the vertical axis for receptacles and pivoting
-// - Logical components: A) Base plate, B) Spine & extension, C) Top receptacle, D) Hanging bin
+// - Final consolidated assembly, designed at 1/3 scale (project convention)
+// - Coordinate convention: Y is vertical for receptacles/pivots; X is lateral
+// - File organizes the assembly into reusable modules: base, spine, receptacle,
+//   hanging bin, and wedge. Constants at the top drive geometry so edits are localized.
 //
-// Conventions & intent
-// - $fn: controls smoothness for circle/hull operations used by the spine
-// - Constants are grouped by component and include a short rationale for future edits
+// Documenting constants: each constant below includes a short rationale that
+// explains its role, the reason for the chosen value, and the component(s) that
+// depend on it. Keep these rationales up-to-date when changing geometry.
 // =============================================================
 
-$fn = 120; // Use high resolution so hull() between sampled circles is smooth
+$fn = 1200; // Circle resolution: very high to keep hull()-generated spine smooth
 
-// --- GLOBAL CONSTANTS (with rationale) -------------------------
-// Base plate: provides the fixed footprint and structural anchor
-BASE_X       = 30.00; // X-length of the base plate: tuned to achieve 30mm unified breadth
-BASE_Y       = 7.50;  // Y-thickness of the base plate: thin support to save material and weight
-BASE_Z       = 30.00; // Z-depth (height) of the base plate extrusion
-COG_X        = 14.00; // X coordinate used as the assembly center-of-geometry (aligns receptacle)
+// --- STANDARDIZED CONSTANTS -----------------------------------
+// U: primary modular unit used across the design. Choosing a single base unit
+// makes scaling and derived dimensions predictable. Here U=14 corresponds to
+// the project's 1x Gridfinity face at 1/3 scale (42mm / 3).
+U            = 14.00;
+// Half_U, Two_U: derived conveniences to avoid repeated arithmetic and to make
+// intent obvious when used in modules (half-widths, double-heights, etc.).
+Half_U       = U / 2;
+Two_U        = U * 2;
 
-// Top receptacle (Component C): socket that receives/houses pivot area for hanging bin
-REC_X        = 7.50;  // X-size of socket: sized to center on `COG_X` and match gridface proportions
-REC_Y        = 7.50;  // Y-depth of socket: tuned for reliable seating while keeping material minimal
-REC_Z        = 30.00; // Z-height of receptacle: matches base extrusion so stacking/clearance is consistent
-REC_START_Y  = 55.00; // Y origin where the receptacle base is positioned in assembly coordinates
+// COG_X: center-of-geometry X coordinate used for aligning receptacles/spine
+// over the base. Setting it to `U` places the COG one modular unit from the
+// origin, which matches the lateral layout used elsewhere in the assembly.
+COG_X        = U;
 
-// Hanging bin (Component D): Gridfinity-derived dimensions and pivot placement
-GRID_1x_SCALED  = 14.00; // Scaled 1x Gridfinity cell (42mm / 3) – used for face alignment and quick reference
-GRID_2x_SCALED  = 28.00; // Scaled 2x Gridfinity cell (84mm / 3) – used when referencing bin length
-BIN_BREADTH     = 30.00; // Visual breadth of the bin to harmonize with base breadth and clearances
-D_PIVOT_X       = 10.25; // Local pivot X (edge-aligned to top receptacle): chosen to place hinge at socket edge
-D_PIVOT_Y       = 62.00; // Pivot Y offset: slide the pivot upward from REC_START_Y to alter hang geometry (55 + 7)
+// BASE_Z: vertical extrusion depth for base components. Using Two_U keeps the
+// base height proportional to the modular unit and gives enough Z clearance
+// for the spine/receptacle geometry to intersect cleanly.
+BASE_Z       = Two_U; 
 
-// Spine sampling and thickness
-SPINE_T      = 7.50; // Diameter of sampled circles along the bezier path; controls spine stiffness and appearance
+// --- EPSILON / FIT TUNING -------------------------------------
+// Small offsets and overlap values used to ensure clean boolean joins and
+// predictable mechanical fit without leaving hairline gaps due to floating
+// precision and STL/CSG edge cases.
+OVERLAP      = 0.10;  // Small positive overlap used where two bodies meet to avoid gaps
 
-// Bezier path control points: define the 2D trajectory of the spine in plan (X, Y)
-p0 = [29.95, 3.75]; // Start near the base plate edge to anchor the spine
-p1 = [49.00, 3.75]; // Pull the curve out along X to shape the base sweep
-p2 = [49.00, 59.00]; // Lift the curve in Y to create the shoulder under the receptacle
-p3 = [14.00, 59.00]; // End point positions the path beneath the top receptacle for a natural join
+// Shared cavity / wall thickness defaults
+WALL  = 1.20; // Typical wall thickness for printed parts at this scale (matches material tolerances)
+FLOOR = 1.20; // Base floor thickness used for cavities and bins
+LIP   = 0.00; // Optional lip value left zero by default; adjust if a retaining lip is required
+EPS_Y = 0.05; // Small vertical epsilon to prevent coplanar face issues in boolean operations
 
-// Cubic Bezier interpolation used to sample many small circles along the spine path
+// DATUM_Y: assembly datum in Y used as the baseline for receptacles and pivot
+// placement. This keeps pivot-related values and receptacle positions consistent.
+DATUM_Y      = 55.25; 
+
+// Pivot location for the hanging bin (Component D). D_PIVOT_X is expressed as
+// an offset from the `COG_X` to tie hinge placement logically to the top
+// receptacle's center. Using `(COG_X - U/4)` positions the pivot slightly
+// interior to the receptacle edge to achieve the desired hang angle.
+D_PIVOT_X    = (COG_X - U/4);
+D_PIVOT_Y    = DATUM_Y; // Tie pivot Y directly to the assembly datum for consistency
+
+// ---------------------------------------------------------------
+// Notes on editing
+// - Prefer changing `U` to rescale the assembly; many values derive from it.
+// - Use small EPSILON values (`OVERLAP`, `EPS_Y`) when adjusting boolean joins.
+// - Keep $fn high if you rely on hull()+circle sampling for visual smoothness;
+//   lowering $fn speeds render but may reveal faceting on the spine.
+// =============================================================
+
+// ---------------- HELPERS ----------------
+
 function bezier(t, p0, p1, p2, p3) = 
     pow(1-t, 3)*p0 + 3*pow(1-t, 2)*t*p1 + 3*(1-t)*pow(t, 2)*p2 + pow(t, 3)*p3;
 
-// --- COMPONENT A: BASE PLATE ---
-color("SteelBlue") {
-    cube([BASE_X, BASE_Y, BASE_Z]);
+module debug_color(debug, default_color) {
+    color(debug ? [1, 0, 0, 0.5] : default_color) 
+        children();
 }
 
-// --- COMPONENT B: UNIFIED C-SPINE & EXTENSION ---
-color("DarkOrange") {
-    linear_extrude(height = BASE_Z) { 
-        difference() {
-            for (t = [0 : 0.01 : 0.99]) {
-                hull() {
-                    translate(bezier(t, p0, p1, p2, p3)) circle(d = SPINE_T);
-                    translate(bezier(t + 0.01, p0, p1, p2, p3)) circle(d = SPINE_T);
+// ---------------- MODULES ----------------
+
+module component_base(show=true, debug=false) {
+    if (show) {
+        BASE_X = Two_U;           
+        BASE_Y = Half_U;           
+        debug_color(debug, "SteelBlue")
+            cube([BASE_X, BASE_Y, BASE_Z]);
+    }
+}
+
+module component_spine(show=true, debug=false) {
+    if (show) {
+        SPINE_T      = Half_U;     
+
+        p0 = [Two_U, 3.75];     
+        p1 = [3.5 * U, 3.75];     
+        p2 = [3.5 * U, 59.00];    
+        p3 = [U, 59.00];        
+        
+        debug_color(debug, "DarkOrange")
+        linear_extrude(height = Two_U) { 
+            difference() {
+                step = $preview ? 0.05 : 0.01;
+                for (t = [0 : step : 1 - step]) {
+                    hull() {
+                        translate(bezier(t, p0, p1, p2, p3)) circle(d = SPINE_T);
+                        translate(bezier(t + step, p0, p1, p2, p3)) circle(d = SPINE_T);
+                    }
                 }
-            }
-            // Socket for Top Receptacle
-            translate([COG_X - (REC_X/2), REC_START_Y]) square([REC_X, REC_Y]);
-            // Top Terminal Cut
-            translate([-50, REC_START_Y + REC_Y]) square([200, 20]);
-            // Ground Guard
-            translate([-50, -50]) square([200, 50]);
-        }
-    }
-}
-
-// --- COMPONENT C: TOP RECEPTACLE ---
-color("ForestGreen") {
-    translate([COG_X - (REC_X/2), REC_START_Y, 0.00]) {
-        cube([REC_X, REC_Y, REC_Z]);
-    }
-}
-
-// --- COMPONENT D: BOTTOM-ALIGNED HANGING RECEPTACLE (HARD VALUES) ---
-// ALIGNMENT: Bottom of D meets Bottom of C (Y=55.00)
-// PIVOT: X=10.25 (Edge of C), Y=55.00 (Base of C)
-// ROTATION: -45 Degrees
-
-color("gray") {
-    // Pivot anchored at the bottom-edge of the top receptacle
-    translate([10.25, 55.00, 0]) { 
-        rotate([0, 0, -45]) {
-            // Internal shift: 
-            // -7.00 (Local X) centers the 14mm face on the pivot
-            // -28.00 (Local Y) ensures the bin hangs BELOW the pivot line
-            translate([-7.00, -28.00, 0]) {
-                cube([14.00, 28.00, 30.00]);
+                
+                // Keep Receptacle overlap for clean junction
+                translate([COG_X - (U/4), DATUM_Y + OVERLAP]) square([Half_U, Half_U]);
+                
+                translate([-50, DATUM_Y + Half_U]) square([200, 20]);
+                
+                // UNDONE: Bottom cut is back to flush at Y=0
+                translate([-50, -50]) square([200, 50]);
             }
         }
     }
 }
 
-// ALIGNMENT: Compensates for the -7.00mm shift in Component D
-// COLOR: Pink for visibility
-
-color("Pink") {
-    linear_extrude(height = 30.00) {
-        polygon(points = [
-            [10.25, 55.00],                   // 1. Pivot (Vertex)
-            [10.25, 62.50],                   // 2. Top of Green Bin (55 + 7.5)
-            
-            // 3. CORRECTED CONTACT POINT:
-            // We use 7.5 / sin(45) to find the hypotenuse length 
-            // required to hit the top-height (62.5) along the 45° slope.
-            // Result: [4.95, 60.30]
-            [10.25 - 4.95, 55.00 + 4.95] 
-        ]);
+module component_receptacle(show=true, debug=false) {
+    if (show) {
+        debug_color(debug, "ForestGreen")
+        translate([COG_X - (Half_U/2), DATUM_Y - OVERLAP, 0]) 
+            cube([Half_U, Half_U + OVERLAP, Two_U]);
     }
 }
 
+module component_hanging_bin(show=true, debug=false) {
+    if (show) {
+        debug_color(debug, "gray")
+        translate([D_PIVOT_X, D_PIVOT_Y, 0]) 
+            rotate([0, 0, -45])
+                translate([-Half_U, -Two_U, 0])
+                    cube([U, Two_U, Two_U]);
+    }
+}
+
+module component_wedge(show=true, debug=false) {
+    if (show) {
+        BRACE        = Half_U * sin(45);
+
+        debug_color(debug, "Pink")
+        linear_extrude(height = BASE_Z) {
+            polygon(points = [
+                [D_PIVOT_X, D_PIVOT_Y],
+                [D_PIVOT_X, DATUM_Y + Half_U],
+                [D_PIVOT_X - BRACE, D_PIVOT_Y + BRACE] 
+            ]);
+        }
+    }
+}
+
+// ---------------- FINAL ASSEMBLY ----------------
+
+difference() {
+    showAll=true;
+    union() {
+        component_base(show=showAll||false, debug=false);
+        component_spine(show=showAll||true, debug=false); 
+        component_receptacle(show=showAll||true, debug=false);
+        component_hanging_bin(show=showAll||false, debug=false);
+        component_wedge(show=showAll||false, debug=false); 
+    }
+}
