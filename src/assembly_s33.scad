@@ -3,7 +3,8 @@
 // =============================================================
 // Overview
 // - Final consolidated assembly built at 1/3 scale (project standard)
-// - Coordinate system: Y is vertical (receptacles/pivots), X is lateral
+// - Coordinate system: Z is vertical (conventional). Geometry is authored Y-up
+//   and remapped to Z-up at export (see z_up() near the end of file).
 // - Modular organization: base, spine, receptacle, hanging bin, and wedge
 // - Each constant is documented with its role and justification; module
 //   descriptions explain the geometry and mechanical intent of each part.
@@ -258,12 +259,25 @@ module assembly() {
 // Keep it as a module so you can add/remove cutters without touching assembly().
 module subtractors() {
      // --- FLUSH-BASE CHOP: remove anything below Y=0 ---
+     // Authoring axis note: after z_up(), this corresponds to Z=0 in output.
      // Use a 3D cutter that stops just below Y=0 to avoid slicing the base plane.
      translate([-50, -200, -1])
          cube([200, 200 - EPS_Y, ASSEMBLY_Z + 2]);
 }
 
-difference() {
-    assembly();
-    subtractors();
+// Remap Y-up authoring coordinates to conventional Z-up output.
+module z_up() {
+    multmatrix([
+        [1, 0, 0, 0],
+        [0, 0, 1, 0],
+        [0, 1, 0, 0],
+        [0, 0, 0, 1]
+    ]) children();
+}
+
+z_up() {
+    difference() {
+        assembly();
+        subtractors();
+    }
 }
