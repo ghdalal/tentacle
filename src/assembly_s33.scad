@@ -1,5 +1,5 @@
 // =============================================================
-// THE TENTACLE - FINAL ASSEMBLY (RESTORED FLUSH BASE)
+// THE TENTACLE - FINAL ASSEMBLY v0.89.1 (RESTORED FLUSH BASE)
 // =============================================================
 // Overview
 // - Final consolidated assembly built at 1/3 scale (project standard)
@@ -19,6 +19,9 @@ $fa = $preview ? 6 : 2; // Fast surface resolution (smaller = finer, affects ren
 $fs = $preview ? 0.8 : 0.25;      // Fast angle resolution (smaller = more segments, smoother curves)
 
 // --- STANDARDIZED CONSTANTS (derived from primary unit U) ----
+// MODEL_VERSION: explicit model revision for traceability across exports.
+MODEL_VERSION = "0.89.1";
+
 // U: primary modular unit at 1/3 scale. U=14 corresponds to the project's
 // 1x Gridfinity face (42mm / 3). All major dimensions derive from U to ensure
 // proportional scaling: a single change to U scales the entire assembly.
