@@ -36,10 +36,10 @@ Two_U        = U * 2;       // 28.00 – used for base height, bin dimensions
 // to this point so they remain centered if U changes.
 COG_X        = U;           // 14.00 – centerline for receptacle/socket alignment
 
-// BASE_Z: vertical depth (Z direction) of the base and spine extrusions.
+// ASSEMBLY_Z: vertical depth (Z direction) of the base and spine extrusions.
 // Using Two_U ensures proportional height relative to the base breadth and
 // provides sufficient clearance for the spine/receptacle join to resolve cleanly.
-BASE_Z       = Two_U;       // 28.00 – full assembly Z height for stacking
+ASSEMBLY_Z   = Two_U;       // 28.00 - full assembly Z height for stacking
 
 // --- EPSILON / FIT TUNING (boolean join and clearance tuning) ----
 // These small values compensate for floating-point precision, STL artifacts,
@@ -108,17 +108,16 @@ module debug_color(debug, default_color) {
 // Description
 // - A thin rectangular plate that anchors the entire assembly.
 // - Dimensions: BASE_X (Two_U × 28mm) in breadth, BASE_Y (Half_U × 7mm) in
-//   thickness, BASE_Z (Two_U × 28mm) in height.
+//   thickness, ASSEMBLY_Z (Two_U × 28mm) in height.
 // - Color: SteelBlue (when debug=false); red highlight (when debug=true).
 // Geometry role
 // - Provides the footprint and reference datum for X/Y placement.
 // - The spine and receptacle are positioned and joined relative to this base.
 module component_base(show=true, debug=false) {
     if (show) {
-        BASE_X = Two_U;           
-        BASE_Y = Half_U;           
+       
         debug_color(debug, "SteelBlue")
-            cube([BASE_X, BASE_Y, BASE_Z]);
+            cube([Two_U, Half_U, ASSEMBLY_Z]);
     }
 }
 
@@ -136,10 +135,12 @@ module component_base(show=true, debug=false) {
 //   while final rendering uses 0.01 (finer) for smooth hulls.
 module component_spine(show=true, debug=false) {
     if (show) {
-        SPINE_T      = Half_U;     
+        // Keep the lowered spine start (p0/p1=3.45) while avoiding any geometry
+        // below Y=0 that can create a residual slice at the base interface.
+        SPINE_T      = Half_U - 2*EPS_Y;     
 
-        p0 = [Two_U, 3.75];     
-        p1 = [3.5 * U, 3.75];     
+        p0 = [Two_U, 3.45];     
+        p1 = [3.5 * U, 3.45];     
         p2 = [3.5 * U, 59.00];    
         p3 = [U, 59.00];        
         
@@ -154,11 +155,8 @@ module component_spine(show=true, debug=false) {
                     }
                 }
                 
-                // Keep Receptacle overlap for clean junction
-                translate([COG_X - (U/4), DATUM_Y + OVERLAP]) square([Half_U, Half_U]);
-                
                  // --- trim everything above (keeps only underside support) ---
-                translate([-50, DATUM_Y + Half_U])
+                translate([-50, DATUM_Y + Half_U + EPS_Y])
                     square([200, 20]);
 
             }
@@ -220,7 +218,7 @@ module component_wedge(show=true, debug=false) {
         BRACE        = Half_U * sin(45);
 
         debug_color(debug, "Pink")
-        linear_extrude(height = BASE_Z) {
+        linear_extrude(height = ASSEMBLY_Z) {
             polygon(points = [
                 [D_PIVOT_X, D_PIVOT_Y],
                 [D_PIVOT_X, DATUM_Y + Half_U],
@@ -237,9 +235,9 @@ showAll = true;                 // true = force everything on for full-assembly 
 function SHOW(default_on) = showAll || default_on;
 
 // Defaults when showAll=false (tune these to your debug workflow)
-base_on   = true;
+base_on   = false;
 spine_on  = true;
-rec_on    = true;
+rec_on    = false;
 bin_on    = false;
 wedge_on  = false;
 
@@ -257,8 +255,9 @@ module assembly() {
 // Keep it as a module so you can add/remove cutters without touching assembly().
 module subtractors() {
      // --- FLUSH-BASE CHOP: remove anything below Y=0 ---
-                translate([-50, -50])
-                    square([200, 50]);
+     // Use a 3D cutter that stops just below Y=0 to avoid slicing the base plane.
+     translate([-50, -200, -1])
+         cube([200, 200 - EPS_Y, ASSEMBLY_Z + 2]);
 }
 
 difference() {
