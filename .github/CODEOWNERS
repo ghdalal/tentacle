@@ -1,0 +1,15 @@
+# CODEOWNERS defines reviewers that must approve changes to the main branch
+# See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default code owners for all files in the repository
+* @ghdalal
+
+# CAD/3D model files
+*.scad @ghdalal
+src/ @ghdalal
+assets/ @ghdalal
+output/ @ghdalal
+
+# Configuration and documentation
+*.md @ghdalal
+.github/ @ghdalal

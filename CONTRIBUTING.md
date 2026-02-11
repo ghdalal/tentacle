@@ -14,6 +14,15 @@ Rules
 - Keep the descriptive part concise (prefer <50 characters).
 - Base new branches from the default branch (`main` or `master` as appropriate).
 
+Main branch protection
+- The `main` branch is **protected** and does not accept direct pushes.
+- All changes to `main` **must go through pull requests**.
+- PRs require:
+  - ✓ Approval from a code owner (see [CODEOWNERS](.github/CODEOWNERS))
+  - ✓ All status checks to pass (CI/CD pipelines, tests)
+  - ✓ Branches to be up to date with `main` before merging
+- This ensures code quality, review, and traceability for all changes.
+
 Commit messages
 - Use imperative, short subject lines: `type(scope): short description` (optional scope).
 - Examples: `feat(onethird): add initial model`, `fix(packing): correct overlap`
