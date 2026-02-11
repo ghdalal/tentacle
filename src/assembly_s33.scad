@@ -14,9 +14,9 @@
 // - Modules can be shown/hidden and color-coded for debugging
 // =============================================================
 
-$fn = 1200;  // Circle resolution for smooth hull() sampling of spine curve
-$fs = 0.2;   // Fast surface resolution (smaller = finer, affects render time)
-$fa = 1;     // Fast angle resolution (smaller = more segments, smoother curves)
+$fn = $preview ? 48 : 1200;   // Circle resolution for smooth hull() sampling of spine curve
+$fa = $preview ? 6 : 2; // Fast surface resolution (smaller = finer, affects render time)
+$fs = $preview ? 0.8 : 0.25;      // Fast angle resolution (smaller = more segments, smoother curves)
 
 // --- STANDARDIZED CONSTANTS (derived from primary unit U) ----
 // U: primary modular unit at 1/3 scale. U=14 corresponds to the project's
@@ -157,10 +157,10 @@ module component_spine(show=true, debug=false) {
                 // Keep Receptacle overlap for clean junction
                 translate([COG_X - (U/4), DATUM_Y + OVERLAP]) square([Half_U, Half_U]);
                 
-                translate([-50, DATUM_Y + Half_U]) square([200, 20]);
-                
-                // UNDONE: Bottom cut is back to flush at Y=0
-                translate([-50, -50]) square([200, 50]);
+                 // --- trim everything above (keeps only underside support) ---
+                translate([-50, DATUM_Y + Half_U])
+                    square([200, 20]);
+
             }
         }
     }
@@ -230,15 +230,38 @@ module component_wedge(show=true, debug=false) {
     }
 }
 
-// ---------------- FINAL ASSEMBLY ----------------
+// ---------------- FINAL MODEL (CSG STANDARD) ----------------
+// Assumption: subtractors will be added later, so we keep the full structure.
+
+showAll = true;                 // true = force everything on for full-assembly checks
+function SHOW(default_on) = showAll || default_on;
+
+// Defaults when showAll=false (tune these to your debug workflow)
+base_on   = true;
+spine_on  = true;
+rec_on    = true;
+bin_on    = false;
+wedge_on  = false;
+
+module assembly() {
+    union() {
+        component_base        (show = SHOW(base_on),  debug=false);
+        component_spine       (show = SHOW(spine_on), debug=false);
+        component_receptacle  (show = SHOW(rec_on),   debug=false);
+        component_hanging_bin (show = SHOW(bin_on),   debug=false);
+        component_wedge       (show = SHOW(wedge_on), debug=false);
+    }
+}
+
+// All future subtractive geometry goes here.
+// Keep it as a module so you can add/remove cutters without touching assembly().
+module subtractors() {
+     // --- FLUSH-BASE CHOP: remove anything below Y=0 ---
+                translate([-50, -50])
+                    square([200, 50]);
+}
 
 difference() {
-    showAll=true;
-    union() {
-        component_base(show=showAll||false, debug=false);
-        component_spine(show=showAll||true, debug=false); 
-        component_receptacle(show=showAll||true, debug=false);
-        component_hanging_bin(show=showAll||false, debug=false);
-        component_wedge(show=showAll||false, debug=false); 
-    }
+    assembly();
+    subtractors();
 }
