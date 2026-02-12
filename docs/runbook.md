@@ -38,7 +38,7 @@
 1. Restrict Drive scan to `prints_root_folder_id`.
 2. Read only folders containing `complete.flag`.
 3. Validate metadata parse, folder-name match, scope-required artifacts, scope-forbidden artifacts, and non-zero file sizes.
-4. If incomplete, skip or mark `sync_pending`.
+4. If incomplete, skip ingestion and optionally record `sync_pending` as a sync result.
 5. Update ledger fields except user-maintained `status`.
 
 ## 5. Prohibited Operations

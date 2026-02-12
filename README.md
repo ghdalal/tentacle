@@ -546,3 +546,18 @@ print-YYYYMMDD-rNN+2-production  (promoted_from = online revision)
 
 Archival policy for working branches is intentionally unspecified.
 
+## Traceability & Revision Governance
+- Revision folder format: `output/prints/print-YYYYMMDD-rNN-[scope]/`
+- Git tag format: `T-rNN` (global monotonic sequence; tags are never reused)
+- Promotion path: `physical -> online -> production` (always creates a new revision)
+- `complete.flag` is written last by the Windows publish process and is required before ingestion
+- Governance, runbook, ledger, prompts, glossary, and templates are defined in:
+  - `docs/devops-strategy.md`
+  - `docs/governance-spec.md`
+  - `docs/runbook.md`
+  - `docs/glossary.md`
+  - `ledger/sheet-spec.md`
+  - `prompts/publish-script-requirements.md`
+  - `prompts/promote-script-requirements.md`
+  - `prompts/validate-script-requirements.md`
+  - `templates/`

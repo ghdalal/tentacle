@@ -48,3 +48,4 @@ Columns (in order):
 - Promotion requires `revisions.status = ready_to_promote`.
 - Do not overwrite `revisions.status` during GAS sync.
 - For online revisions with changed assumptions, `revisions.parameter_deltas` must mirror `metadata.json.parameter_delta`.
+- `sync_pending` is a sync result marker, not a `revisions.status` lifecycle value.
