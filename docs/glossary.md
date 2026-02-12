@@ -8,10 +8,12 @@
 - Scope Purity: Required and forbidden artifact rules enforced per scope.
 - complete.flag: File written last by the Windows publish process to mark artifact freeze readiness for ingestion.
 - Immutable Artifacts: `metadata.json`, `model.stl`, `slicer.3mf`, and `source/` after `complete.flag`.
-- Evidence Artifacts: Files under `tests/*`; may be appended after `complete.flag`.
+- Evidence Artifacts: Files under `tests/*`; may be appended after `complete.flag` for up to 48 hours.
 - Promotion: Creation of a new revision from an ancestor following `physical -> online -> production`.
 - Lineage: Metadata links between promoted revisions and their ancestors.
-- Parameter Delta: `metadata.json.parameter_delta` values recorded when online assumptions differ from physical assumptions.
+- Parameter Delta: `metadata.json.parameter_delta` values recorded when online assumptions differ from physical assumptions, in the form `{ "param": { "from": <value>, "to": <value> } }`.
 - Ledger: Google Sheets tabs (`revisions`, `online_notes`) used for traceability and promotion status.
 - GAS Ingestion: Google Apps Script synchronization from Drive revision folders to the Sheets ledger.
 - Status Lifecycle: `artifacts_ready`, `evidence_logged`, `ready_to_promote`, `passed`, `failed`.
+- Override Reason: `metadata.json.override_reason` category required for `physical -> production` exceptions.
+- Envelope Constraint: A breaking change if a new artifact cannot be swapped into an existing assembly without modifying adjacent modules or the baseplate.

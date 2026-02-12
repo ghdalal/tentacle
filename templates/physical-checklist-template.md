@@ -16,6 +16,7 @@
 - [ ] `metadata.json` exists and parses.
 - [ ] `source/` exists.
 - [ ] `complete.flag` was written last.
+- [ ] `physical-tests-results.json` includes `printer_id`.
 
 ## Governance
 - [ ] Folder name matches `metadata.json.revision_id`.
