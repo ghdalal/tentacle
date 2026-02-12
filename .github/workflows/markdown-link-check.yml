@@ -1,21 +1,17 @@
-name: Markdown Link Check
+name: Check Markdown links
 
-on:
-  pull_request:
-  push:
-    paths:
-      - "README.md"
-      - "docs/**"
+on: push
 
 jobs:
-  link-check:
+  markdown-link-check:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Check markdown links
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
-        with:
-          file-path: "README.md,docs"
-          use-quiet-mode: "yes"
-          check-modified-files-only: "no"
+    - uses: actions/checkout@v4
+    - uses: tcort/github-action-markdown-link-check@v1
+      with:
+        use-quiet-mode: 'yes'
+        use-verbose-mode: 'yes'
+        config-file: 'mlc_config.json'
+        folder-path: 'docs'
+        file-path: './README.md, ./LICENSE, ./CONTRIBUTING.md'
+        max-depth: 5
