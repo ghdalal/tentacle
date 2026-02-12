@@ -8,6 +8,7 @@
     "revision_id",
     "scope",
     "recorded_at_utc",
+    "printer_id",
     "overall_result",
     "tests"
   ],
@@ -23,6 +24,10 @@
     "recorded_at_utc": {
       "type": "string",
       "format": "date-time"
+    },
+    "printer_id": {
+      "type": "string",
+      "description": "Unique printer identifier from the hardware registry."
     },
     "overall_result": {
       "type": "string",

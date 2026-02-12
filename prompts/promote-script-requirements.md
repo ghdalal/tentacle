@@ -5,6 +5,7 @@ Define requirements for promotion from ancestor revisions into new revisions.
 
 ## Promotion Path
 - Must allow only: `physical -> online -> production`.
+- Exception: `physical -> production` is allowed only when `metadata.json.override_reason` is set and CODEOWNER approval is recorded in the ledger.
 - Must always create a new revision.
 - Must never edit ancestor revisions.
 
@@ -23,9 +24,15 @@ Define requirements for promotion from ancestor revisions into new revisions.
   - Must set `promoted_from = physical_revision_id`.
   - Must reference physical ancestor in `metadata.json`.
 - For promotion to `production`:
-  - Must set `promoted_from = online_revision_id`.
-  - Must set `physical_ancestor_revision_id`.
-  - Must set `online_ancestor_revision_id`.
+  - Standard:
+    - Must set `promoted_from = online_revision_id`.
+    - Must set `physical_ancestor_revision_id`.
+    - Must set `online_ancestor_revision_id`.
+  - Exception `physical -> production` (when allowed):
+    - Must set `promoted_from = physical_revision_id`.
+    - Must set `physical_ancestor_revision_id = physical_revision_id`.
+    - Must set `online_ancestor_revision_id = null`.
+    - Must require `metadata.json.override_reason`.
 
 ## Scope Purity Enforcement
 - `online` target must include `model.stl` and `tests/online/`.

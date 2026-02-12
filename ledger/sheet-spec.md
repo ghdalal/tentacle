@@ -11,14 +11,15 @@ Columns (in order):
 7. `git_commit`
 8. `promoted_from`
 9. `promotion_reason`
-10. `physical_ancestor_revision_id`
-11. `online_ancestor_revision_id`
-12. `parameter_deltas`
-13. `drive_revision_folder_url`
-14. `metadata_file_url`
-15. `physical_checklist_doc_url`
-16. `online_notes_count` (formula-driven)
-17. `status` (user-maintained)
+10. `override_approved_by` (required when `override_reason` is used)
+11. `physical_ancestor_revision_id`
+12. `online_ancestor_revision_id`
+13. `parameter_deltas`
+14. `drive_revision_folder_url`
+15. `metadata_file_url`
+16. `physical_checklist_doc_url`
+17. `online_notes_count` (formula-driven)
+18. `status` (user-maintained)
 
 `revision_id` regex:
 - `print-\d{8}-r\d+-[a-z]+`
@@ -43,6 +44,12 @@ Columns (in order):
 5. `details`
 6. `author`
 7. `attachments_folder_url`
+
+## Tab: sync_results (optional)
+Columns (in order):
+1. `timestamp_utc`
+2. `revision_id`
+3. `result` (for example: `sync_pending`)
 
 ## Governance Constraints
 - Promotion requires `revisions.status = ready_to_promote`.

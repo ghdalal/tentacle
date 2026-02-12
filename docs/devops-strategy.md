@@ -26,13 +26,14 @@ Define deterministic publication, traceability, and promotion for print revision
 - `complete.flag` is written last by the Windows publish script.
 - GAS ingestion requires `complete.flag`.
 - `complete.flag` freezes `metadata.json`, `model.stl`, `slicer.3mf`, and `source/`.
-- Evidence in `tests/*` may be appended after `complete.flag`.
+- Evidence in `tests/*` may be appended after `complete.flag` for up to 48 hours.
 
 ## Promotion Policy
 - Mandatory path: `physical -> online -> production`
 - Promotion always creates a new revision.
 - Ancestor revisions are never edited.
 - Promotion requires Sheet `status = ready_to_promote`.
+ - `physical -> production` is disallowed by default; requires `override_reason` and CODEOWNER approval when used as an exception.
 - If ancestor status is not `passed`, explicit confirmation is mandatory.
 
 ## Lineage Fields

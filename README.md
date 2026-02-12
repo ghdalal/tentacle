@@ -61,6 +61,7 @@ Design a compact Gridfinity-compatible vertical organizer that supports a mixed 
 ### 3.3 Retention Features
 - Integrated pockets for Gridfinity-compatible magnets.
 - Pocket sizing and depth must prevent loose seating while allowing practical insertion during assembly.
+- Magnet specification: 6 mm x 2 mm, minimum N35 grade, with a pull force of 2.5 N per pair.
 
 
 ---
@@ -76,6 +77,7 @@ Design a compact Gridfinity-compatible vertical organizer that supports a mixed 
   2. Verify 45° hanging receptacle angle.
   3. Record deviation from nominal.
 - **Acceptance Criteria:** All measured values within ±0.5 mm (except angle tolerance as defined by measurement capability).
+  - Angle tolerance: 45 deg +/- 1 deg.
 
 ### 4.2 TC-02: Interface Fitment (Gridfinity Modules)
 **Purpose:** Validate receptacle interoperability and insertion usability.
@@ -86,13 +88,14 @@ Design a compact Gridfinity-compatible vertical organizer that supports a mixed 
   2. Confirm no excessive force is required.
   3. Check seated position and removal behavior.
 - **Acceptance Criteria:** Modules fully seat, remain retained in expected orientation, and can be removed without binding.
+  - Seating force must be < 5 N.
 
 ### 4.3 TC-03: Static Load Capacity
 **Purpose:** Confirm payload capacity and structural integrity.
 
 - **Inputs/Tools:** Incremental weights up to 200 g
 - **Steps:**
-  1. Apply staged load (e.g., 50 g increments) up to 200 g.
+  1. Apply staged load in 50 g increments up to 200 g.
   2. Hold at maximum load for 10–30 minutes.
   3. Inspect for permanent deformation or crack initiation.
 - **Acceptance Criteria:** No structural failure, no permanent deformation affecting intended function.
@@ -106,6 +109,7 @@ Design a compact Gridfinity-compatible vertical organizer that supports a mixed 
   2. Place on flat surface and apply light handling disturbances.
   3. Observe rocking, drift, or tipping tendencies.
 - **Acceptance Criteria:** No tipping in nominal use conditions; acceptable stability during light interaction.
+  - Stability requirement: must not tip at a 15 deg tilt.
 
 ---
 
@@ -124,7 +128,7 @@ Rules:
 5. Traceability SHALL be maintained from source → derived artifacts → validation evidence.
 6. Parallel experimentation SHALL occur outside the published revision tree.
 7. Promotion SHALL be implemented as a new revision. Existing revisions SHALL NOT be edited.
-8. Promotion SHALL follow a single fixed path: `physical → online → production`.
+8. Promotion SHALL follow a single fixed path: `physical → online → production`, except for the explicit `physical → production` override in Section 5.15.3.
 
 ---
 
@@ -446,11 +450,24 @@ Required fields:
 - `scope` (string; one of `prototype`, `physical`, `online`, `production`)
 - `previous_revision` (string or null)
 - `description` (string)
+- `git_tag` (string; `T-rNN`)
+- `git_commit` (string; 7-40 hex)
 
 Additional required promotion fields:
 
 - `promoted_from` (string or null)
 - `promotion_reason` (string or null)
+- `override_reason` (string or null; required only for `physical → production` exceptions)
+
+`override_reason` valid values:
+- `Emergency Field Repair`
+- `Legacy Validation Carryover`
+- `Component Criticality: Low`
+
+`parameter_delta`:
+- Required when online assumptions differ from physical assumptions.
+- Structure: `{ "param_name": { "from": <value>, "to": <value> } }`
+- `<value>` may be a number, string, boolean, or null.
 
 No checksum enforcement required.
 No deprecation flag required.
@@ -468,6 +485,12 @@ No deprecation flag required.
 ## 5.13 Printer Hardware Rule
 
 If printer hardware changes (even with identical `model.stl` and `slicer.3mf`), a new revision SHALL be published. Printer identity SHALL be recorded in `physical-tests-results.json`.
+
+Hardware changes requiring a new physical revision:
+- Nozzle diameter
+- Hotend or extruder components
+- Cooling modifications
+- Major firmware type changes (for example, Marlin -> Klipper)
 
 ---
 
@@ -518,7 +541,7 @@ physical → online → production
 
 Disallowed paths include (not exhaustive):
 
-- `physical → production` (not allowed)
+- `physical → production` (not allowed by default; see exception below)
 - `online → physical` (not allowed)
 - `prototype → online` (not allowed)
 - `prototype → physical` (not defined as promotion; it is a new revision)
@@ -540,13 +563,28 @@ print-YYYYMMDD-rNN+1-online      (promoted_from = physical revision)
 print-YYYYMMDD-rNN+2-production  (promoted_from = online revision)
 ```
 
+### 5.15.3 Exception: `physical → production`
+This path is disallowed by default. An exception is only possible when:
+- `metadata.json.override_reason` is set to one of:
+  - `Emergency Field Repair`
+  - `Legacy Validation Carryover`
+  - `Component Criticality: Low`
+- A CODEOWNER provides explicit approval recorded in the ledger.
+In this exception:
+- `promoted_from = physical_revision_id`
+- `physical_ancestor_revision_id = physical_revision_id`
+- `online_ancestor_revision_id = null`
+
 ---
 
 ## 5.16 Deferred Decisions
 
-Archival policy for working branches is intentionally unspecified.
+Branch archival policy:
+- Inactivity is defined by the associated Pull Request.
+- If there are no new commits or comments for 30 days, the branch is eligible for archival.
 
 ## Traceability & Revision Governance
+- `docs/governance-spec.md` is the authoritative source; in conflicts it takes precedence over this README.
 - Revision folder format: `output/prints/print-YYYYMMDD-rNN-[scope]/`
 - Git tag format: `T-rNN` (global monotonic sequence; tags are never reused)
 - Promotion path: `physical -> online -> production` (always creates a new revision)

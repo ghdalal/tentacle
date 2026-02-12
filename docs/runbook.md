@@ -17,17 +17,29 @@
    - `slicer.3mf`
    - `source/`
 2. Append evidence only under `tests/*`.
-3. Update Sheet `status` through lifecycle:
+3. Evidence append window is 48 hours after `complete.flag`.
+4. Update Sheet `status` through lifecycle:
    - `artifacts_ready`
    - `evidence_logged`
    - `ready_to_promote`
    - `passed` or `failed`
+5. Only CODEOWNERS may set `ready_to_promote` or `passed`.
+6. If `.scad` sources, `metadata.json`, or `parameter_delta` change, reset status to `artifacts_ready`.
 
 ## 3. Promotion Procedure
 1. Confirm source revision status is `ready_to_promote`.
 2. If source status is not `passed`, require explicit confirmation.
 3. Promote only along `physical -> online -> production`.
 4. Create a new revision folder and new tag for promotion target.
+
+### 3.1 Exception: `physical -> production`
+1. Ensure `metadata.json.override_reason` is populated with an allowed category.
+2. Record CODEOWNER approval in the ledger.
+3. Proceed with a production revision only after approval.
+4. Set lineage fields:
+   - `promoted_from = physical_revision_id`
+   - `physical_ancestor_revision_id = physical_revision_id`
+   - `online_ancestor_revision_id = null`
 5. Preserve ancestors without edits.
 6. Set lineage fields in `metadata.json`:
    - Online target: `promoted_from = physical_revision_id`
