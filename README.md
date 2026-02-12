@@ -18,7 +18,7 @@ Tentacle is a compact Gridfinity-compatible vertical organizer with mixed loadin
 - Legacy tags may use `T-rNN` and remain valid for existing releases.
 
 ## Repository Layout (High Level)
-- `docs/` - product, manufacturing, release, and automation documentation
+- `docs/` - product, manufacturing, release, assets and automation documentation
 - `src/` - OpenSCAD sources organized by variant
 - `templates/` - JSON schemas and checklists
 - `output/prints/` - immutable published revisions
