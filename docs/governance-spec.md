@@ -121,7 +121,7 @@ Online notes tab columns:
 - Validate non-zero artifact file sizes.
 - Reject metadata if `revision_id` mismatches folder name.
 - Reject malformed `metadata.json`.
-- If artifacts are incomplete: skip ingestion or mark `sync_pending`.
+- If artifacts are incomplete: skip ingestion and optionally record `sync_pending` as a sync result.
 - Never overwrite user-maintained `status`.
 
 ## 10. Status Lifecycle
@@ -134,3 +134,5 @@ Allowed status values:
 
 Promotion precondition:
 - `ready_to_promote`
+
+`sync_pending` is not a `revisions.status` value.
