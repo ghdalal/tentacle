@@ -54,23 +54,14 @@ Design a compact Gridfinity-compatible vertical organizer that supports a mixed 
 - The center of the **Top Receptacle** and the center of the **Hanging Receptacle** must lie on the same vertical axis.
 - This axis must pass through the center of the **front 2 × 2 baseplate** to optimize center-of-gravity behavior and reduce tipping risk.
 
-### 3.2 Assembly Strategy
-- Acceptable implementations:
-  - **Single-piece print**
-  - **Vertically split two-piece construction**
-- If split construction is used, mating surfaces must preserve nominal geometry and alignment requirements.
-
-### 3.3 Tolerance Specification
+### 3.2 Tolerance Specification
 - **General dimensional tolerance:** ±0.5 mm
 - Applies to all fit-critical surfaces, interface edges, and receptacle boundaries.
 
-### 3.4 Retention Features
+### 3.3 Retention Features
 - Integrated pockets for Gridfinity-compatible magnets.
 - Pocket sizing and depth must prevent loose seating while allowing practical insertion during assembly.
 
-### 3.5 Material and Process Notes
-- Preferred print material: **PETG+** for lightweight receptacle use.
-- Alternate fabrication route: **Aluminum CNC** when higher stiffness or production repeatability is required.
 
 ---
 
@@ -116,143 +107,442 @@ Design a compact Gridfinity-compatible vertical organizer that supports a mixed 
   3. Observe rocking, drift, or tipping tendencies.
 - **Acceptance Criteria:** No tipping in nominal use conditions; acceptable stability during light interaction.
 
-### 4.5 TC-05: Magnet Pocket Retention
-**Purpose:** Validate magnet pocket function.
+---
 
-- **Inputs/Tools:** Specified magnet size set
-- **Steps:**
-  1. Insert magnets in all retention pockets.
-  2. Check flushness and frictional retention.
-  3. Perform light pull and handling checks.
-- **Acceptance Criteria:** Magnets seat consistently and remain retained under normal handling.
+# 5. Artifact, Revision, Branching, Promotion, and Test Governance Specification (Tentacle)
 
-### 4.6 TC-06: Assembly Variant Validation (If Two-Piece Build Used)
-**Purpose:** Ensure split build option remains dimensionally equivalent and mechanically sound.
+## 5.1 Purpose and Design Principles
 
-- **Inputs/Tools:** Printed split components, assembly hardware/adhesive per build plan
-- **Steps:**
-  1. Assemble split components.
-  2. Re-run TC-01 and TC-02 checks on assembled part.
-  3. Inspect seam alignment and rigidity.
-- **Acceptance Criteria:** Assembled unit meets dimensional and fitment requirements without seam-induced misalignment.
+This specification defines how Tentacle print revisions, artifacts, and test evidence SHALL be stored and governed.
+
+Rules:
+
+1. Each published revision SHALL be fully self-contained.
+2. Published revisions SHALL be immutable.
+3. Revision numbers SHALL be global and strictly increasing.
+4. Scope SHALL match the validation performed for that revision.
+5. Traceability SHALL be maintained from source → derived artifacts → validation evidence.
+6. Parallel experimentation SHALL occur outside the published revision tree.
+7. Promotion SHALL be implemented as a new revision. Existing revisions SHALL NOT be edited.
+8. Promotion SHALL follow a single fixed path: `physical → online → production`.
 
 ---
 
-## 5. Artifact and Test-Data Folder Structure (3 Alternatives)
+## 5.2 Definitions
 
-The project needs to support:
-- preprint assets (render source and previews)
-- slicer files
-- real test prints
-- output photos/renders
-- test results stored with the same print revision folder
-- online testing that produces render outputs only
+### 5.2.1 Revision
 
-Below are three workable layouts.
+A revision is a frozen, published snapshot of artifacts and, when applicable, test evidence.
 
-### 5.1 Alternative A — Revision-Centric (Recommended)
-Store everything per print revision in one subfolder so each print is fully self-contained.
+### 5.2.2 Published
 
-```text
+A revision is published when a folder is created under:
+
+```
+output/prints/
+```
+
+and populated with the required files for its scope. After publication, it is immutable.
+
+### 5.2.3 Scope
+
+Scope is a per-revision classification defining validation requirements.
+
+Allowed scope values:
+
+| scope       | meaning                                                 | tests directory |
+|------------|----------------------------------------------------------|-----------------|
+| prototype  | design iteration only                                    | forbidden       |
+| physical   | printed and physically evaluated                         | required        |
+| online     | digital validation only                                  | required        |
+| production | final candidate; must satisfy both physical and online   | required        |
+
+Scope MAY change between revisions. Scope is per revision, not per branch.
+
+### 5.2.4 Strict Purity Rule (Scope Isolation)
+
+A revision SHALL contain only the test evidence required for its own scope:
+
+- `physical` SHALL contain only `tests/physical/` and SHALL NOT contain `tests/online/`.
+- `online` SHALL contain only `tests/online/` and SHALL NOT contain `tests/physical/`.
+- `production` SHALL contain both `tests/online/` and `tests/physical/`.
+- `prototype` SHALL contain no `tests/` directory.
+
+---
+
+## 5.3 Revision Identifier and Global Numbering
+
+### 5.3.1 Revision Identifier Format
+
+```
+print-YYYYMMDD-rNN-[scope]
+```
+
+Components:
+
+- `YYYYMMDD` SHALL be the publication date (freeze date).
+- `rNN` SHALL be the global, strictly increasing revision number.
+- `[scope]` SHALL be one of: `prototype`, `physical`, `online`, `production`.
+
+Example:
+
+```
+print-20260211-r07-physical
+```
+
+### 5.3.2 Global Sequence Requirements
+
+- `rNN` SHALL increment by 1 for each new published revision.
+- `rNN` SHALL NEVER reset.
+- `rNN` SHALL NEVER be reused.
+- Revision numbering SHALL reflect publication order only.
+
+---
+
+## 5.4 Immutability and New Revision Triggers
+
+### 5.4.1 Immutability
+
+Once published:
+
+- Files SHALL NOT be edited.
+- Files SHALL NOT be replaced.
+- Files SHALL NOT be deleted.
+- Test data SHALL NOT be modified.
+
+Any correction requires publishing a new revision.
+
+### 5.4.2 Mandatory New Revision Conditions
+
+A new revision MUST be created if any of the following changes:
+
+- Source content (any file inside `source.zip`)
+- Derived artifacts (renders, previews)
+- Generated STL (`model.stl`)
+- Slicer file (`slicer.3mf`)
+- Printer hardware used (physical/production)
+- Test results JSON
+- Measurements
+- Photographs (including retakes)
+- Scope designation
+- Metadata content
+
+If traceability, reproducibility, or validation changes → new revision.
+
+### 5.4.3 Re-testing Policy
+
+If a previously printed object is re-measured or re-evaluated (even without geometry change), this SHALL be recorded as a new revision.
+
+---
+
+## 5.5 Canonical Folder Structure (Minimal Depth)
+
+All folder and file names SHALL be strict lowercase.
+
+```
 output/
   prints/
-    print-YYYYMMDD-r01/
-      preprint/
-        model.stl
-        slicer.3mf
-        online-renders/
-          iso.png
-          side.png
-      test-print/
-        photos/
+    print-YYYYMMDD-rNN-[scope]/
+
+      metadata.json
+
+      source/
+        source.zip
+        render_iso.png
+        render_side.png
+        preview_iso.png
+        preview_side.png
+
+      model.stl              (required for physical/online/production; forbidden for prototype)
+      slicer.3mf             (required for physical/production; forbidden for prototype/online)
+
+      tests/                 (forbidden for prototype)
+
+        online/              (required only for online and production)
+          result-extract.zip
+          online-tests-results.json
+
+        physical/            (required only for physical and production)
           front.jpg
-          side.jpg
-        results/
-          checklist.md
-          measurements.csv
-          pass-fail.json
+          left.jpg
+          right.jpg
+          iso.jpg
+          top.jpg
+          back.jpg
+          bottom.jpg
+          physical-tests-results.json
 ```
 
-**Why use it:**
-- Easiest traceability: one folder = one revision + all evidence.
-- Best match for your requirement that specific print folders capture print results.
-- Online outputs remain inside `preprint/online-renders/` only.
+---
 
-### 5.2 Alternative B — Pipeline-Stage-Centric
-Separate by workflow stage, then version each print revision under every stage.
+## 5.6 File Requirements by Scope
 
-```text
-output/
-  preprint/
-    print-YYYYMMDD-r01/
-      stl/model.stl
-      slicer/slicer.3mf
-      online-renders/
-        iso.png
-  test-prints/
-    print-YYYYMMDD-r01/
-      photos/
-        front.jpg
-      results/
-        checklist.md
-        measurements.csv
-  final-renders/
-    print-YYYYMMDD-r01/
-      hero.png
+### 5.6.1 Prototype Scope (`prototype`)
+
+Required:
+
+- `metadata.json`
+- `source/source.zip`
+- `source/render_iso.png`
+- `source/render_side.png`
+- `source/preview_iso.png`
+- `source/preview_side.png`
+
+Forbidden:
+
+- `model.stl`
+- `slicer.3mf`
+- `tests/`
+
+---
+
+### 5.6.2 Physical Scope (`physical`)
+
+Required:
+
+- All Prototype-required artifacts
+- `model.stl`
+- `slicer.3mf`
+- `tests/physical/` full photo set
+- `tests/physical/physical-tests-results.json`
+
+Forbidden:
+
+- `tests/online/`
+
+---
+
+### 5.6.3 Online Scope (`online`)
+
+Required:
+
+- All Prototype-required artifacts
+- `model.stl`
+- `tests/online/result-extract.zip`
+- `tests/online/online-tests-results.json`
+
+Forbidden:
+
+- `slicer.3mf`
+- `tests/physical/`
+
+---
+
+### 5.6.4 Production Scope (`production`)
+
+Required:
+
+- All Prototype-required artifacts
+- `model.stl`
+- `slicer.3mf`
+- `tests/online/result-extract.zip`
+- `tests/online/online-tests-results.json`
+- `tests/physical/` full photo set
+- `tests/physical/physical-tests-results.json`
+
+---
+
+## 5.7 Rendering and Preview Requirements
+
+- `source/render_*.png` SHALL correspond to OpenSCAD F6 renders.
+- `source/preview_*.png` SHALL correspond to OpenSCAD F5 previews.
+
+Both categories MUST include:
+
+- `*_iso.png` — isometric view
+- `*_side.png` — side view
+
+All four images are mandatory for every revision.
+
+---
+
+## 5.8 STL and Slicer Derivation Rules
+
+### 5.8.1 STL Requirement
+
+- `model.stl` SHALL be required for `physical`, `online`, and `production`.
+- `model.stl` SHALL be forbidden for `prototype`.
+
+### 5.8.2 Slicer Requirement
+
+- `slicer.3mf` SHALL be required for `physical` and `production`.
+- `slicer.3mf` SHALL be forbidden for `prototype` and `online`.
+
+### 5.8.3 Derivation Constraint
+
+If `slicer.3mf` exists:
+
+- It SHALL be derived from `model.stl`.
+- `model.stl` SHALL represent the exact geometry used for slicing.
+
+---
+
+## 5.9 Test Capture Requirements
+
+### 5.9.1 Online Testing
+
+Required files:
+
+- `tests/online/result-extract.zip`
+- `tests/online/online-tests-results.json`
+
+Online testing SHALL NOT include physical measurements.
+
+### 5.9.2 Physical Testing
+
+Required files:
+
+- `front.jpg`
+- `left.jpg`
+- `right.jpg`
+- `iso.jpg`
+- `top.jpg`
+- `back.jpg`
+- `bottom.jpg`
+- `physical-tests-results.json`
+
+Photo rules:
+
+- Raw captures required.
+- Cropping allowed.
+- Minor color correction allowed.
+- Full set required for all physical revisions, including failures.
+- Retakes require new revision.
+
+---
+
+## 5.10 JSON Standards
+
+### 5.10.1 Timestamp Format
+
+All timestamps stored in JSON SHALL be ISO 8601 UTC.
+
+Example:
+
+```
+2026-02-12T18:25:43Z
 ```
 
-**Why use it:**
-- Clear process flow (preprint -> print -> final render).
-- Good if different people/tools own different stages.
+### 5.10.2 Schema Versioning
 
-**Tradeoff:**
-- Evidence for one revision is split across multiple roots.
+All test result JSON files SHALL include:
 
-### 5.3 Alternative C — Manifest-Driven Hybrid
-Keep files physically grouped by type, but use a per-revision manifest to link all artifacts and test outcomes.
-
-```text
-output/
-  artifacts/
-    preprint/
-      print-YYYYMMDD-r01/
-        model.stl
-        slicer.3mf
-    online-renders/
-      print-YYYYMMDD-r01/
-        iso.png
-    print-photos/
-      print-YYYYMMDD-r01/
-        front.jpg
-  validation/
-    print-YYYYMMDD-r01/
-      checklist.md
-      measurements.csv
-      results.json
-      manifest.yaml
+```
+schema_version
 ```
 
-Example `manifest.yaml` fields:
-- revision_id
-- model_file
-- slicer_file
-- online_render_files
-- print_photo_files
-- test_results_file
-- overall_status
+Schema changes SHALL increment `schema_version`.
 
-**Why use it:**
-- Scales best for automation/reporting dashboards.
-- Strong for machine-readable indexing across many revisions.
+---
 
-### 5.4 Naming and Result-Capture Conventions (Applies to Any Alternative)
-- Use immutable revision IDs, e.g. `print-20260211-r03`.
-- Keep a `results/` (or `validation/`) folder for each print revision.
-- Minimum result files per revision:
-  - `checklist.md` (human notes)
-  - `measurements.csv` (raw dimensional/load observations)
-  - `pass-fail.json` (structured verdict by test case)
-- Keep online render outputs isolated to an `online-renders/` folder to reflect that online testing only generates renders.
+## 5.11 metadata.json Requirements
 
-### 5.5 Suggested Choice
-Choose **Alternative A (Revision-Centric)** unless you already run an automated data pipeline. It is the simplest way to keep model, slicer, print photos, and test results together in the exact same print subfolder.
+`metadata.json` is mandatory for every revision.
+
+Required fields:
+
+- `revision_id` (string; must match folder name)
+- `publication_date_utc` (string; ISO 8601 UTC)
+- `scope` (string; one of `prototype`, `physical`, `online`, `production`)
+- `previous_revision` (string or null)
+- `description` (string)
+
+Additional required promotion fields:
+
+- `promoted_from` (string or null)
+- `promotion_reason` (string or null)
+
+No checksum enforcement required.
+No deprecation flag required.
+
+---
+
+## 5.12 Source Archive Policy (`source.zip`)
+
+- `source.zip` SHALL contain all files necessary to reproduce the model and derived artifacts.
+- Dependencies and assets SHALL be included.
+- `source.zip` SHALL be treated as the authoritative source snapshot for that revision.
+
+---
+
+## 5.13 Printer Hardware Rule
+
+If printer hardware changes (even with identical `model.stl` and `slicer.3mf`), a new revision SHALL be published. Printer identity SHALL be recorded in `physical-tests-results.json`.
+
+---
+
+## 5.14 Branching Policy
+
+Parallel experimentation SHALL occur outside:
+
+```
+output/prints/
+```
+
+Example:
+
+```
+work/
+  experiment-spine/
+  experiment-pivot/
+```
+
+Working branches:
+
+- May change freely.
+- Are not revision-numbered.
+- Are not published artifacts.
+
+Publishing from branches:
+
+1. Assign next global revision number.
+2. Create revision folder under `output/prints/`.
+3. Copy finalized artifacts into the revision folder.
+4. Publish and freeze permanently.
+
+If multiple branches are ready simultaneously, publish them as separate sequential revisions. Publication order defines revision order.
+
+---
+
+## 5.15 Promotion Policy (Single Fixed Path)
+
+Promotion is allowed without repeating prior work, but promotion SHALL always create a new revision.
+
+### 5.15.1 Allowed Promotion Paths (Only)
+
+The only allowed promotion path is:
+
+```
+physical → online → production
+```
+
+Disallowed paths include (not exhaustive):
+
+- `physical → production` (not allowed)
+- `online → physical` (not allowed)
+- `prototype → online` (not allowed)
+- `prototype → physical` (not defined as promotion; it is a new revision)
+
+### 5.15.2 Promotion Implementation
+
+When promoting:
+
+1. Publish a new revision with the new scope.
+2. Copy forward only artifacts permitted by the target scope.
+3. Do not copy forbidden test folders (strict purity rule).
+4. Record lineage in `metadata.json` using `promoted_from`.
+
+Example path:
+
+```
+print-YYYYMMDD-rNN-physical
+print-YYYYMMDD-rNN+1-online      (promoted_from = physical revision)
+print-YYYYMMDD-rNN+2-production  (promoted_from = online revision)
+```
+
+---
+
+## 5.16 Deferred Decisions
+
+Archival policy for working branches is intentionally unspecified.
+
