@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tentacle/templates/online-tests-results.schema.json",
+  "title": "Tentacle Online Test Results",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "revision_id",
+    "scope",
+    "recorded_at_utc",
+    "overall_result",
+    "tests"
+  ],
+  "properties": {
+    "revision_id": {
+      "type": "string",
+      "pattern": "^print-\\d{8}-r\\d+-(online|production)$"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "online",
+        "production"
+      ]
+    },
+    "recorded_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "overall_result": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed"
+      ]
+    },
+    "tests": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "result"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed"
+            ]
+          },
+          "note_type": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "details": {
+            "type": "string"
+          },
+          "attachments_folder_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tentacle/templates/physical-tests-results.schema.json",
+  "title": "Tentacle Physical Test Results",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "revision_id",
+    "scope",
+    "recorded_at_utc",
+    "overall_result",
+    "tests"
+  ],
+  "properties": {
+    "revision_id": {
+      "type": "string",
+      "pattern": "^print-\\d{8}-r\\d+-physical$"
+    },
+    "scope": {
+      "type": "string",
+      "const": "physical"
+    },
+    "recorded_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "overall_result": {
+      "type": "string",
+      "enum": [
+        "passed",
+        "failed"
+      ]
+    },
+    "checklist_doc_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tests": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "result"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "passed",
+              "failed"
+            ]
+          },
+          "notes": {
+            "type": "string"
+          },
+          "evidence_urls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

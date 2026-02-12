@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tentacle/templates/metadata.schema.json",
+  "title": "Tentacle Revision Metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "revision_id",
+    "publication_date_utc",
+    "scope",
+    "git_tag",
+    "git_commit"
+  ],
+  "properties": {
+    "revision_id": {
+      "type": "string",
+      "pattern": "^print-\\d{8}-r\\d+-[a-z]+$"
+    },
+    "publication_date_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "prototype",
+        "physical",
+        "online",
+        "production"
+      ]
+    },
+    "previous_revision": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^print-\\d{8}-r\\d+-[a-z]+$"
+    },
+    "description": {
+      "type": "string"
+    },
+    "git_tag": {
+      "type": "string",
+      "pattern": "^T-r\\d+$"
+    },
+    "git_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{7,40}$"
+    },
+    "promoted_from": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^print-\\d{8}-r\\d+-[a-z]+$"
+    },
+    "promotion_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "physical_ancestor_revision_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^print-\\d{8}-r\\d+-[a-z]+$"
+    },
+    "online_ancestor_revision_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^print-\\d{8}-r\\d+-[a-z]+$"
+    },
+    "parameter_delta": {
+      "type": "object",
+      "description": "Required when online assumptions differ from physical assumptions.",
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "scope": {
+            "const": "online"
+          }
+        },
+        "required": [
+          "scope"
+        ]
+      },
+      "then": {
+        "required": [
+          "promoted_from"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "scope": {
+            "const": "production"
+          }
+        },
+        "required": [
+          "scope"
+        ]
+      },
+      "then": {
+        "required": [
+          "promoted_from",
+          "physical_ancestor_revision_id",
+          "online_ancestor_revision_id"
+        ]
+      }
+    }
+  ]
+}
