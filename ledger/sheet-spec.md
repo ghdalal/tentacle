@@ -1,0 +1,50 @@
+# Google Sheets Ledger Specification
+
+## Tab: revisions
+Columns (in order):
+1. `revision_id`
+2. `publication_date_utc`
+3. `scope`
+4. `previous_revision`
+5. `description`
+6. `git_tag`
+7. `git_commit`
+8. `promoted_from`
+9. `promotion_reason`
+10. `physical_ancestor_revision_id`
+11. `online_ancestor_revision_id`
+12. `parameter_deltas`
+13. `drive_revision_folder_url`
+14. `metadata_file_url`
+15. `physical_checklist_doc_url`
+16. `online_notes_count` (formula-driven)
+17. `status` (user-maintained)
+
+`revision_id` regex:
+- `print-\d{8}-r\d+-[a-z]+`
+
+`online_notes_count` formula:
+- Row formula: `=IF(A2="","",COUNTIF(online_notes!B:B,A2))`
+- Fill down for all revision rows.
+
+`status` allowed lifecycle values:
+- `artifacts_ready`
+- `evidence_logged`
+- `ready_to_promote`
+- `passed`
+- `failed`
+
+## Tab: online_notes
+Columns (in order):
+1. `timestamp_utc`
+2. `revision_id`
+3. `note_type`
+4. `summary`
+5. `details`
+6. `author`
+7. `attachments_folder_url`
+
+## Governance Constraints
+- Promotion requires `revisions.status = ready_to_promote`.
+- Do not overwrite `revisions.status` during GAS sync.
+- For online revisions with changed assumptions, `revisions.parameter_deltas` must mirror `metadata.json.parameter_delta`.
