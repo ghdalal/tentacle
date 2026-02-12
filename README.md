@@ -1,6 +1,6 @@
 # Tentacle
 
-Tentacle is a compact Gridfinity-compatible vertical organizer with mixed loading pattern support.
+This is a compact, vertical organizer designed for the **Gridfinity** ecosystem. By utilizing a high-density mixed loading pattern, it maximizes your workspace—bringing tools off the desk and into reach.
 ![Tentacle vision](docs/assets/vision/tentacle-vision.png)
 
 ## Get Started
