@@ -2,6 +2,11 @@
 
 Welcome to the Tentacle documentation portal. Use the sections below to find the right set of docs for your task.
 
+## Assets
+- Image assets guide: [assets/README.md](assets/README.md)
+
+![Tentacle vision](assets/vision/tentacle-vision.png)
+
 ## Product
 - Technical specification: [product/technical-spec.md](product/technical-spec.md)
 - Test specification: [product/test-specification.md](product/test-specification.md)
