@@ -41,7 +41,7 @@
     },
     "git_tag": {
       "type": "string",
-      "pattern": "^T-r\\d+$"
+      "pattern": "^(T-r\\d+|s\\d{2}-r\\d+)$"
     },
     "git_commit": {
       "type": "string",

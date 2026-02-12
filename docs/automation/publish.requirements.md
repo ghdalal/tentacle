@@ -6,8 +6,8 @@ Define requirements for the Windows publish script that creates a new revision f
 ## Required Behavior
 - Must create revision folder with format: `output/prints/print-YYYYMMDD-rNN-[scope]/`.
 - Must allocate `rNN` as a globally monotonic revision number.
-- Must set Git tag format to `T-rNN`.
-- Must abort if tag `T-rNN` already exists.
+- Must set Git tag format to `sXX-rNN` (legacy `T-rNN` allowed for existing releases).
+- Must abort if the tag already exists.
 - Must never reuse a tag.
 
 ## Scope Purity Enforcement

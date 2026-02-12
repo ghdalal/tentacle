@@ -24,6 +24,10 @@ Columns (in order):
 `revision_id` regex:
 - `print-\d{8}-r\d+-[a-z]+`
 
+`git_tag` format:
+- Future releases: `sXX-rNN`
+- Legacy releases may use `T-rNN`
+
 `online_notes_count` formula:
 - Row formula: `=IF(A2="","",COUNTIF(online_notes!B:B,A2))`
 - Fill down for all revision rows.
