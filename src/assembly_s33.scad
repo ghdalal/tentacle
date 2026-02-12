@@ -1,9 +1,10 @@
 // =============================================================
-// THE TENTACLE - FINAL ASSEMBLY (RESTORED FLUSH BASE)
+// THE TENTACLE - FINAL ASSEMBLY v0.89.1 (RESTORED FLUSH BASE)
 // =============================================================
 // Overview
 // - Final consolidated assembly built at 1/3 scale (project standard)
-// - Coordinate system: Y is vertical (receptacles/pivots), X is lateral
+// - Coordinate system: Z is vertical (conventional). Geometry is authored Y-up
+//   and remapped to Z-up at export (see z_up() near the end of file).
 // - Modular organization: base, spine, receptacle, hanging bin, and wedge
 // - Each constant is documented with its role and justification; module
 //   descriptions explain the geometry and mechanical intent of each part.
@@ -14,11 +15,14 @@
 // - Modules can be shown/hidden and color-coded for debugging
 // =============================================================
 
-$fn = 1200;  // Circle resolution for smooth hull() sampling of spine curve
-$fs = 0.2;   // Fast surface resolution (smaller = finer, affects render time)
-$fa = 1;     // Fast angle resolution (smaller = more segments, smoother curves)
+$fn = $preview ? 48 : 1200;   // Circle resolution for smooth hull() sampling of spine curve
+$fa = $preview ? 6 : 2; // Fast surface resolution (smaller = finer, affects render time)
+$fs = $preview ? 0.8 : 0.25;      // Fast angle resolution (smaller = more segments, smoother curves)
 
 // --- STANDARDIZED CONSTANTS (derived from primary unit U) ----
+// MODEL_VERSION: explicit model revision for traceability across exports.
+MODEL_VERSION = "0.89.1";
+
 // U: primary modular unit at 1/3 scale. U=14 corresponds to the project's
 // 1x Gridfinity face (42mm / 3). All major dimensions derive from U to ensure
 // proportional scaling: a single change to U scales the entire assembly.
@@ -36,10 +40,10 @@ Two_U        = U * 2;       // 28.00 – used for base height, bin dimensions
 // to this point so they remain centered if U changes.
 COG_X        = U;           // 14.00 – centerline for receptacle/socket alignment
 
-// BASE_Z: vertical depth (Z direction) of the base and spine extrusions.
+// ASSEMBLY_Z: vertical depth (Z direction) of the base and spine extrusions.
 // Using Two_U ensures proportional height relative to the base breadth and
 // provides sufficient clearance for the spine/receptacle join to resolve cleanly.
-BASE_Z       = Two_U;       // 28.00 – full assembly Z height for stacking
+ASSEMBLY_Z   = Two_U;       // 28.00 - full assembly Z height for stacking
 
 // --- EPSILON / FIT TUNING (boolean join and clearance tuning) ----
 // These small values compensate for floating-point precision, STL artifacts,
@@ -108,17 +112,16 @@ module debug_color(debug, default_color) {
 // Description
 // - A thin rectangular plate that anchors the entire assembly.
 // - Dimensions: BASE_X (Two_U × 28mm) in breadth, BASE_Y (Half_U × 7mm) in
-//   thickness, BASE_Z (Two_U × 28mm) in height.
+//   thickness, ASSEMBLY_Z (Two_U × 28mm) in height.
 // - Color: SteelBlue (when debug=false); red highlight (when debug=true).
 // Geometry role
 // - Provides the footprint and reference datum for X/Y placement.
 // - The spine and receptacle are positioned and joined relative to this base.
 module component_base(show=true, debug=false) {
     if (show) {
-        BASE_X = Two_U;           
-        BASE_Y = Half_U;           
+       
         debug_color(debug, "SteelBlue")
-            cube([BASE_X, BASE_Y, BASE_Z]);
+            cube([Two_U, Half_U, ASSEMBLY_Z]);
     }
 }
 
@@ -136,10 +139,12 @@ module component_base(show=true, debug=false) {
 //   while final rendering uses 0.01 (finer) for smooth hulls.
 module component_spine(show=true, debug=false) {
     if (show) {
-        SPINE_T      = Half_U;     
+        // Keep the lowered spine start (p0/p1=3.45) while avoiding any geometry
+        // below Y=0 that can create a residual slice at the base interface.
+        SPINE_T      = Half_U - 2*EPS_Y;     
 
-        p0 = [Two_U, 3.75];     
-        p1 = [3.5 * U, 3.75];     
+        p0 = [Two_U, 3.45];     
+        p1 = [3.5 * U, 3.45];     
         p2 = [3.5 * U, 59.00];    
         p3 = [U, 59.00];        
         
@@ -154,13 +159,10 @@ module component_spine(show=true, debug=false) {
                     }
                 }
                 
-                // Keep Receptacle overlap for clean junction
-                translate([COG_X - (U/4), DATUM_Y + OVERLAP]) square([Half_U, Half_U]);
-                
-                translate([-50, DATUM_Y + Half_U]) square([200, 20]);
-                
-                // UNDONE: Bottom cut is back to flush at Y=0
-                translate([-50, -50]) square([200, 50]);
+                 // --- trim everything above (keeps only underside support) ---
+                translate([-50, DATUM_Y + Half_U + EPS_Y])
+                    square([200, 20]);
+
             }
         }
     }
@@ -220,7 +222,7 @@ module component_wedge(show=true, debug=false) {
         BRACE        = Half_U * sin(45);
 
         debug_color(debug, "Pink")
-        linear_extrude(height = BASE_Z) {
+        linear_extrude(height = ASSEMBLY_Z) {
             polygon(points = [
                 [D_PIVOT_X, D_PIVOT_Y],
                 [D_PIVOT_X, DATUM_Y + Half_U],
@@ -230,15 +232,52 @@ module component_wedge(show=true, debug=false) {
     }
 }
 
-// ---------------- FINAL ASSEMBLY ----------------
+// ---------------- FINAL MODEL (CSG STANDARD) ----------------
+// Assumption: subtractors will be added later, so we keep the full structure.
 
-difference() {
-    showAll=true;
+showAll = true;                 // true = force everything on for full-assembly checks
+function SHOW(default_on) = showAll || default_on;
+
+// Defaults when showAll=false (tune these to your debug workflow)
+base_on   = false;
+spine_on  = true;
+rec_on    = false;
+bin_on    = false;
+wedge_on  = false;
+
+module assembly() {
     union() {
-        component_base(show=showAll||false, debug=false);
-        component_spine(show=showAll||true, debug=false); 
-        component_receptacle(show=showAll||true, debug=false);
-        component_hanging_bin(show=showAll||false, debug=false);
-        component_wedge(show=showAll||false, debug=false); 
+        component_base        (show = SHOW(base_on),  debug=false);
+        component_spine       (show = SHOW(spine_on), debug=false);
+        component_receptacle  (show = SHOW(rec_on),   debug=false);
+        component_hanging_bin (show = SHOW(bin_on),   debug=false);
+        component_wedge       (show = SHOW(wedge_on), debug=false);
+    }
+}
+
+// All future subtractive geometry goes here.
+// Keep it as a module so you can add/remove cutters without touching assembly().
+module subtractors() {
+     // --- FLUSH-BASE CHOP: remove anything below Y=0 ---
+     // Authoring axis note: after z_up(), this corresponds to Z=0 in output.
+     // Use a 3D cutter that stops just below Y=0 to avoid slicing the base plane.
+     translate([-50, -200, -1])
+         cube([200, 200 - EPS_Y, ASSEMBLY_Z + 2]);
+}
+
+// Remap Y-up authoring coordinates to conventional Z-up output.
+module z_up() {
+    multmatrix([
+        [1, 0, 0, 0],
+        [0, 0, 1, 0],
+        [0, 1, 0, 0],
+        [0, 0, 0, 1]
+    ]) children();
+}
+
+z_up() {
+    difference() {
+        assembly();
+        subtractors();
     }
 }
