@@ -1,4 +1,4 @@
-# Tentacle DevOps Strategy
+# Build and Publish
 
 ## Objective
 Define deterministic publication, traceability, and promotion for print revisions without rewriting history.
@@ -6,9 +6,9 @@ Define deterministic publication, traceability, and promotion for print revision
 ## Revision Identity
 - Revision folder: `output/prints/print-YYYYMMDD-rNN-[scope]/`
 - `rNN` is globally monotonic across all scopes.
-- Git tag: `T-rNN`
+- Git tag (future): `sXX-rNN` (legacy `T-rNN` allowed for existing releases).
 - Tag reuse is forbidden.
-- Publisher must abort if tag already exists.
+- Publisher must abort if the tag already exists.
 
 ## Repository History Policy
 - History is append-only after the first tag.
@@ -16,7 +16,7 @@ Define deterministic publication, traceability, and promotion for print revision
 - Amend is forbidden.
 - Force-push is forbidden.
 
-## Scope Rules
+## Scope Rules (Summary)
 - `prototype`: no `tests/`; must not include `model.stl` or `slicer.3mf`; must include `metadata.json`, `source/`, `complete.flag`
 - `physical`: must include `model.stl`, `slicer.3mf`, `tests/physical/`; must not include `tests/online/`
 - `online`: must include `model.stl`, `tests/online/`; must not include `tests/physical/` or `slicer.3mf`; must reference its physical ancestor in `metadata.json`
@@ -33,7 +33,7 @@ Define deterministic publication, traceability, and promotion for print revision
 - Promotion always creates a new revision.
 - Ancestor revisions are never edited.
 - Promotion requires Sheet `status = ready_to_promote`.
- - `physical -> production` is disallowed by default; requires `override_reason` and CODEOWNER approval when used as an exception.
+- `physical -> production` is disallowed by default; requires `override_reason` and CODEOWNER approval when used as an exception.
 - If ancestor status is not `passed`, explicit confirmation is mandatory.
 
 ## Lineage Fields
@@ -48,6 +48,6 @@ Define deterministic publication, traceability, and promotion for print revision
 - Ledger mirror field: `parameter_deltas`
 
 ## Ledger and Sync Boundary
-- Google Sheets is the operational ledger (`ledger/sheet-spec.md`).
+- The operational ledger is defined in [ledger-spec.md](ledger-spec.md).
 - GAS ingestion must stay under `prints_root_folder_id`.
 - Sync must not overwrite user-managed `status` values.

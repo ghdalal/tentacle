@@ -4,7 +4,7 @@
 - Revision Folder: Directory `output/prints/print-YYYYMMDD-rNN-[scope]/` that stores one released revision.
 - Global Revision Number (`rNN`): Monotonic revision counter shared by all scopes.
 - Scope: Release stage of a revision: `prototype`, `physical`, `online`, or `production`.
-- Tag (`T-rNN`): Git tag bound to one revision number; never reused.
+- Tag (`sXX-rNN`): Git tag bound to one revision number and variant (legacy tags may use `T-rNN`); never reused.
 - Scope Purity: Required and forbidden artifact rules enforced per scope.
 - complete.flag: File written last by the Windows publish process to mark artifact freeze readiness for ingestion.
 - Immutable Artifacts: `metadata.json`, `model.stl`, `slicer.3mf`, and `source/` after `complete.flag`.

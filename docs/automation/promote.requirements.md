@@ -16,8 +16,8 @@ Define requirements for promotion from ancestor revisions into new revisions.
 ## Revision Identity
 - Must create target folder: `output/prints/print-YYYYMMDD-rNN-[scope]/`.
 - Must allocate `rNN` from global monotonic sequence.
-- Must create tag `T-rNN`.
-- Must abort if `T-rNN` already exists.
+- Must create tag `sXX-rNN` (legacy `T-rNN` allowed for existing releases).
+- Must abort if the tag already exists.
 
 ## Lineage Requirements
 - For promotion to `online`:
