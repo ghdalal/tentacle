@@ -24,3 +24,15 @@
 * **Tolerances:** Dimensional tolerances = ±0.5mm.
 * **Retention Details:** Integrated pockets for Gridfinity magnets.
 * **Material & Print Settings:** PETG+ 3D printed for light receptacle or Aluminum CNC.
+
+## Traceability & Revision Governance
+- Revision folder format: `output/prints/print-YYYYMMDD-rNN-[scope]/`
+- Git tag format: `T-rNN` (global monotonic sequence; tags are never reused)
+- Promotion path: `physical -> online -> production` (always creates a new revision)
+- `complete.flag` is written last by the Windows publish process and is required before ingestion
+- Governance, runbook, ledger, and templates are defined in:
+  - `docs/devops-strategy.md`
+  - `docs/governance-spec.md`
+  - `docs/runbook.md`
+  - `ledger/sheet-spec.md`
+  - `templates/`
