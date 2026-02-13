@@ -167,7 +167,7 @@ for path in root.rglob('*.md'):
             norm = normalize(target)
             if 'output/prints/' in norm and '/source/' in norm and norm.lower().endswith(image_exts):
                 rel = path.relative_to(root)
-                print(f\"{rel}:{i}\")
+                print(f"{rel}:{i}")
 PY
           )
 
