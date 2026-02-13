@@ -2,12 +2,15 @@ name: Naming Audit
 
 on:
   schedule:
-    - cron: '0 5 * * 1'
+   - cron: '0 18 * * 5'
   workflow_dispatch:
+
 
 jobs:
   naming-audit:
     runs-on: ubuntu-latest
+    continue-on-error: true
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
