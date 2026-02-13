@@ -10,7 +10,7 @@ from googleapiclient.http import MediaFileUpload
 
 # --- CONFIGURATION ---
 SHEET_ID = '1eUlaAeK1Uq-7v_qRLIlsFU4HphGmG2hd_JVdtl78lGI'
-WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzndE6qGfXdZYGHNMOGOGA3DXf8657i2b7K9ILnhfohE39nL2XW1hXVo9wbqN9Qedon/execD' 
+WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzndE6qGfXdZYGHNMOGOGA3DXf8657i2b7K9ILnhfohE39nL2XW1hXVo9wbqN9Qedon/exec'
 PARENT_DRIVE_FOLDER_ID = '1eq0sUx1rX4Xk9Mjh12D6apsdK7ZViP1l'
 
 sys.stdout.reconfigure(line_buffering=True)
