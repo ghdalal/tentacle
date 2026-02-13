@@ -3,7 +3,7 @@
 This is a compact, vertical organizer designed for the **Gridfinity** ecosystem. By utilizing a high-density mixed loading pattern, it maximizes your workspace—bringing tools off the desk and into reach.
 | Concept Vision | 1st Prototype at 33% scale |
 | :--- | :--- |
-| ![Tentacle vision](docs/assets/vision/tentacle-vision.png) | <img src="docs/assets/vision/tentacle-s33.png" width="400" /> |
+| ![Tentacle vision](docs/assets/vision/tentacle-vision.png) | <img src="docs/assets/vision/tentacle-s33.jpg" width="400" /> |
 
 ## Get Started
 - Documentation portal: [docs/README.md](docs/README.md)
