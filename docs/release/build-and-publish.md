@@ -5,6 +5,7 @@ Define deterministic publication, traceability, and promotion for print revision
 
 ## Revision Identity
 - Revision folder: `output/prints/print-YYYYMMDD-rNN-[scope]/`
+- Revision ID: `print-YYYYMMDD-rNN-[scope]`
 - `rNN` is globally monotonic across all scopes.
 - Git tag (future): `sXX-rNN` (legacy `T-rNN` allowed for existing releases).
 - Tag reuse is forbidden.

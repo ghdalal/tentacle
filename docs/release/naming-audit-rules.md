@@ -1,88 +1,184 @@
-# Naming Audit Rules
+# Naming Audit Rules and Project Governance
 
-<a id="governance-rules"></a>
+This document establishes the structural requirements, naming conventions, and governance policies for the OpenSCAD design repository. These rules ensure consistency across physical manufacturing outputs, documentation assets, and automated audit processes.
+
+## Table of Contents
+
+* [Project Structure and Roots](#project-structure-and-roots)
+* [Naming Conventions: Source Development](#naming-conventions-source-development)
+* [Naming Conventions: Published Releases](#naming-conventions-published-releases)
+* [Naming Conventions: Documentation Assets](#naming-conventions-documentation-assets)
+* [Blessed File Formats](#blessed-file-formats)
+* [Governance Rules](#governance-rules)
+* [Summary and Next Steps](#summary-and-next-steps)
+
+---
+
+## Project Structure and Roots
+
+The repository is organized into distinct root directories based on the lifecycle of the files. All contributors must adhere to this top-level hierarchy to maintain compatibility with automation scripts.
+Canonical root structure is defined in `docs/release/versioning.md` Section 5.
+
+* **Documentation Root (`docs/`):** All long-form documentation, user guides, and the coffee table book project assets reside here.
+* **Source Root (`src/`):** This is the workspace for active development. Only OpenSCAD files and immediate design logic belong in this folder.
+* **Templates Root (`templates/`):** Contains reusable OpenSCAD modules and configuration templates that are not variant-specific.
+* **Release Root (`output/prints/`):** The canonical location for every finalized version intended for 3D printing or archival.
+
+### Rule: docs root (Failure)
+`docs/` MUST exist and is the canonical documentation root.
+
+### Rule: src root (Failure)
+`src/` MUST exist and is the source development root.
+
+### Rule: templates root (Failure)
+`templates/` MUST exist and is the shared template root.
+
+### Rule: output prints root (Failure)
+`output/prints/` MUST exist and is the release root.
+
+---
+
+## Naming Conventions: Source Development
+
+Source development focuses on variant isolation. Each unique design iteration or component family is treated as a "variant."
+
+* **Variant Directories:** Located at `src/<variant>/`. Folders must be strictly lowercase and use kebab-case (e.g., `src/tentacle-base/`).
+* **Shared Modules:** `src/common/` is reserved for shared modules and helpers and is not a variant.
+* **Dynamic Entrypoint Naming:** Every variant must have a primary assembly file following the pattern `src/<variant>/assembly_<variant>.<ext>`.
+* *Example:* For the folder `src/s33/`, the entry file must be `assembly_s33.<ext>`.
+* **Isolation Policy:** Files within a variant folder should only reference local files or the `templates/` directory to prevent cross-variant dependencies.
+
+### Rule: variant directory format (Failure)
+Variant directories under `src/` (excluding `src/common/`) MUST be lowercase kebab-case.
+
+### Rule: variant entry file (Failure)
+Each variant directory MUST contain `assembly_<variant>.<ext>` where `<variant>` matches the directory name.
+
+### Rule: src entrypoints location (Failure)
+No `.scad` files are allowed directly under `src/`. Entrypoints must live under `src/<variant>/`.
+
+---
+
+## Naming Conventions: Published Releases
+
+The `output/prints/` directory serves as the historical record for the project. Naming here is highly regulated to allow for regex-based auditing.
+This audit focuses on naming and minimal structure; full scope artifact requirements live in `docs/release/versioning.md`.
+
+### Revision Folders
+
+Every release is contained within a revision folder named using the following regex: `print-\d{8}-r\d+-(prototype|physical|online|production)`.
+
+* **Format:** `print-YYYYMMDD-rNN-[scope]`
+* **Revision ID:** `print-YYYYMMDD-rNN-[scope]`
+* **Example:** `print-20260213-r01-prototype`
+
+### Rule: revision folder format (Failure)
+Revision folder names MUST follow `print-YYYYMMDD-rNN-[scope]`.
+
+### Rule: revision folder regex (Failure)
+Revision folder names MUST match `print-\d{8}-r\d+-(prototype|physical|online|production)`.
+
+### Rule: revision scope values (Failure)
+Allowed scope values are `prototype`, `physical`, `online`, and `production`.
+
+### Rule: revision id match (Failure)
+Every revision MUST include `metadata.json` with `revision_id` matching the folder name.
+
+### Internal Revision Structure
+
+### Rule: revision subfolders (Failure)
+Every revision MUST include `source/`. Non-prototype revisions MUST include `tests/`.
+
+* **Source Folder:** Located at `output/prints/<revision>/source/`. This contains the "frozen" assets for that specific revision.
+* **High-Fi Renders:** `render_iso.<ext>` and `render_side.<ext>`.
+* **Quick Previews:** `preview_iso.<ext>` and `preview_side.<ext>`.
+
+### Rule: render preview names (Failure)
+`source/` MUST contain `render_iso.<ext>`, `render_side.<ext>`, `preview_iso.<ext>`, and `preview_side.<ext>`.
+
+### Rule: render preview views (Failure)
+Both render and preview sets MUST include `iso` and `side` views.
+
+* **Test Results:** Located at `output/prints/<revision>/tests/` when required by scope.
+
+### Rule: tests subfolders (Failure)
+Only `online/` and `physical/` are allowed under `tests/`.
+
+### Rule: tests scope gating (Failure)
+* `prototype`: `tests/` MUST NOT exist.
+* `physical`: `tests/physical/` required, `tests/online/` forbidden.
+* `online`: `tests/online/` required, `tests/physical/` forbidden.
+* `production`: both `tests/online/` and `tests/physical/` required.
+
+### Rule: online test results (Failure)
+`tests/online/` MUST include `online-tests-results.json` and `result-extract.zip`.
+
+### Rule: physical test results (Failure)
+`tests/physical/` MUST include `physical-tests-results.json`.
+
+---
+
+## Naming Conventions: Documentation Assets
+
+Assets intended for the "The Tentacle" coffee table book or GitHub READMEs must be mirrored to the central documentation directory to keep the release folder immutable.
+
+* **Vision Images:** Stored in `docs/assets/vision/` and named `vision-<suffix>.<ext>`.
+* **Gallery Renders:** Stored in `docs/assets/renders/` following the pattern `<variant>-<release>-<view>-<type>.*`.
+* **Technical Drawings:** Stored in `docs/assets/drawings/` following the pattern `<variant>-<release>-<view>-<type>.*`.
+
+### Rule: docs assets subfolders (Warning)
+Only `docs/assets/vision/`, `docs/assets/renders/`, and `docs/assets/drawings/` are allowed under `docs/assets/`.
+
+### Rule: vision default name (Failure)
+Vision filenames MUST include a suffix and follow `vision-<suffix>.<ext>`.
+
+### Rule: vision v2 name (Failure)
+If the vision changes materially, the filename SHOULD be updated to a new suffix (for example, `vision-v2.png`).
+
+### Rule: docs renders pattern (Failure)
+Renders MUST follow `<variant>-<release>-<view>-<type>.<ext>` and be lowercase.
+
+### Rule: docs drawings pattern (Failure)
+Drawings MUST follow `<variant>-<release>-<view>-<type>.<ext>` and be lowercase.
+
+---
+
+## Blessed File Formats (Warning)
+
+To prevent repository bloat and ensure cross-platform compatibility, only "Blessed" formats are permitted. Files using unapproved extensions will trigger a **Naming Audit Warning**.
+
+| Category | Approved Extensions |
+| --- | --- |
+| **CAD & Code** | `.scad` |
+| **Geometry** | `.stl`, `.step`, `.3mf` |
+| **Visuals** | `.png`, `.jpg`, `.jpeg`, `.webp` |
+| **Data & Archives** | `.json`, `.zip` |
+
+Entrypoint files under `src/<variant>/assembly_<variant>.<ext>` are exempt from the extension list.
+Vision assets under `docs/assets/vision/` may use additional image extensions when needed.
+Violations of blessed formats are warnings, not failures.
+
+---
+
 ## Governance Rules
 
-[Jump](#conflicts)
+These rules define the mandatory behaviors for all files and folders within the project ecosystem.
 
-<a id="rule-docs-root"></a>
-Documentation MUST live under `docs/`. [Jump](#rule-docs-root)
+* **Immutability (Failure):** Once a folder is published under `output/prints/`, its contents are finalized. They MUST NOT be modified, renamed, or replaced. Any changes require a new revision number (`rNN`).
+* **Case Protocol (Failure):** All files and folders under `output/prints/` MUST be lowercase.
+* **Asset Mirroring (Failure):** Documentation images must be moved from the `source/` folder of a revision to `docs/assets/` if they are to be used in external documentation. Active source files (`src/`) must never store final documentation images.
 
-<a id="rule-src-root"></a>
-OpenSCAD sources MUST live under `src/`. [Jump](#rule-src-root)
+### Rule: prints lowercase (Failure)
+No uppercase characters are allowed in any file or folder name under `output/prints/`.
 
-<a id="rule-templates-root"></a>
-Templates MUST live under `templates/`. [Jump](#rule-templates-root)
+---
 
-<a id="rule-output-prints-root"></a>
-Published releases MUST live under `output/prints/`. [Jump](#rule-output-prints-root)
+## Summary and Next Steps
 
-<a id="rule-prints-immutable"></a>
-Files under `output/prints/` MUST NOT be modified, moved, or replaced after publication. [Jump](#rule-prints-immutable)
+This document provides the single source of truth for the project's organization. By adhering to these naming audit rules, we ensure that "The Tentacle" project remains scalable and that every 3D printed part can be traced back to its specific OpenSCAD source and test results.
 
-<a id="rule-src-entrypoints-location"></a>
-OpenSCAD entrypoints MUST live under `src/<variant>/`. [Jump](#rule-src-entrypoints-location)
+**Immediate Next Steps:**
 
-<a id="rule-s33-entry"></a>
-The default 1/3 scale variant entry file MUST be `src/s33/assembly_s33.scad`. [Jump](#rule-s33-entry)
-
-<a id="rule-new-variant-doc"></a>
-If a new variant is added, it MUST be created as a new `src/<variant>/` folder and its entry file MUST be documented. [Jump](#rule-new-variant-doc)
-
-<a id="rule-revision-folder-format"></a>
-Revision folders under `output/prints/` MUST be named `print-YYYYMMDD-rNN-[scope]`. [Jump](#rule-revision-folder-format)
-
-<a id="rule-revision-id-match"></a>
-Revision IDs MUST follow `print-YYYYMMDD-rNN-[scope]` and MUST match their folder name. [Jump](#rule-revision-id-match)
-
-<a id="rule-revision-folder-regex"></a>
-Revision folder names MUST match regex `print-\d{8}-r\d+-[a-z]+`. [Jump](#rule-revision-folder-regex)
-
-<a id="rule-revision-scope-values"></a>
-The scope segment in revision folder names MUST be one of `prototype`, `physical`, `online`, or `production`. [Jump](#rule-revision-scope-values)
-
-<a id="rule-prints-lowercase"></a>
-All folder and file names under `output/prints/` MUST be strict lowercase. [Jump](#rule-prints-lowercase)
-
-<a id="rule-revision-subfolders"></a>
-The canonical revision structure MUST use lowercase subfolders named `source/` and `tests/` under each revision folder. [Jump](#rule-revision-subfolders)
-
-<a id="rule-tests-subfolders"></a>
-When present, test evidence subfolders MUST be named `tests/online/` and `tests/physical/`. [Jump](#rule-tests-subfolders)
-
-<a id="rule-render-preview-names"></a>
-Rendering and preview files under `output/prints/<revision>/source/` MUST be named `render_*.png` and `preview_*.png`. [Jump](#rule-render-preview-names)
-
-<a id="rule-render-preview-views"></a>
-Rendering and preview sets MUST include `_iso.png` and `_side.png` variants. [Jump](#rule-render-preview-views)
-
-<a id="rule-online-test-results"></a>
-Online test results MUST be named `tests/online/online-tests-results.json` and `tests/online/result-extract.zip`. [Jump](#rule-online-test-results)
-
-<a id="rule-physical-test-results"></a>
-Physical test results MUST include `tests/physical/physical-tests-results.json`. [Jump](#rule-physical-test-results)
-
-<a id="rule-docs-assets-location"></a>
-Documentation images MUST NOT be stored under `src/` or `output/prints/`. [Jump](#rule-docs-assets-location)
-
-<a id="rule-docs-assets-subfolders"></a>
-New subfolders under `docs/assets/` MUST NOT be added without explicit decision. [Jump](#rule-docs-assets-subfolders)
-
-<a id="rule-vision-default-name"></a>
-The default vision image in `docs/assets/vision/` MUST be named `tentacle-vision.png`. [Jump](#rule-vision-default-name)
-
-<a id="rule-vision-v2-name"></a>
-If the vision changes materially, the updated image MUST be named `tentacle-vision-v2.png`. [Jump](#rule-vision-v2-name)
-
-<a id="rule-docs-renders-pattern"></a>
-Files under `docs/assets/renders/` MUST follow `<variant>-<release>-<view>-<type>.xxx`. [Jump](#rule-docs-renders-pattern)
-
-<a id="rule-docs-drawings-pattern"></a>
-Files under `docs/assets/drawings/` MUST follow `<variant>-<release>-<view>-<type>.xxx`. [Jump](#rule-docs-drawings-pattern)
-
-<a id="conflicts"></a>
-## Conflicts
-
-[Jump](#governance-rules)
-
-No conflicts found across Markdown sources for naming or structure rules.
+1. Review existing folders in `output/prints/` for compliance with the lowercase and regex rules.
+2. Standardize the entrypoint naming in the `src/` directory to match the variant folder names.
+3. Configure CI/CD linting to flag any "Non-Blessed" file formats.

@@ -1,11 +1,15 @@
 # Tentacle Release Versioning and Governance
+## Severity Legend
+- (Failure): MUST/SHALL/REQUIRED/FORBIDDEN requirements.
+- (Warning): SHOULD requirements.
+- (Info): Definitions and guidance.
 
-## 0. Authority
+## 0. Authority (Info)
 - This document is the Single Source of Truth (SSoT) for release governance and versioning rules.
 - `docs/README.md` is a portal; if a conflict exists, this document prevails.
 - Naming audit rules: [docs/release/naming-audit-rules.md](naming-audit-rules.md#governance-rules).
 
-## 1. Revision Identity
+## 1. Revision Identity (Failure)
 - Revision folder format: `output/prints/print-YYYYMMDD-rNN-[scope]/`
 - Revision ID format: `print-YYYYMMDD-rNN-[scope]`
 - `rNN` is globally monotonic across all scopes.
@@ -14,11 +18,11 @@
   - Tags are immutable pointers into history and must never be reused.
   - Legacy tags may use `T-rNN` and remain valid for existing releases.
 
-## 2. History Integrity
+## 2. History Integrity (Failure)
 - Git history is append-only after the first tag.
 - Forbidden operations: rebase, amend, force-push, tag reuse.
 
-## 3. Definitions
+## 3. Definitions (Info)
 - Revision: a frozen, published snapshot of artifacts and, when applicable, test evidence.
 - Published: a revision folder exists under `output/prints/` and is populated for its scope.
 - Scope: a per-revision classification defining validation requirements.
@@ -35,16 +39,16 @@ Allowed scope values:
 
 Scope MAY change between revisions. Scope is per revision, not per branch.
 
-## 4. Immutability and New Revision Triggers
+## 4. Immutability and New Revision Triggers (Failure)
 
-### 4.1 Immutability
+### 4.1 Immutability (Failure)
 Once published:
 - Files SHALL NOT be edited, replaced, or deleted.
 - Test data SHALL NOT be modified.
 
 Any correction requires publishing a new revision.
 
-### 4.2 Mandatory New Revision Conditions
+### 4.2 Mandatory New Revision Conditions (Failure)
 A new revision MUST be created if any of the following changes:
 - Source content (any file inside `source.zip`)
 - Derived artifacts (renders, previews)
@@ -59,11 +63,33 @@ A new revision MUST be created if any of the following changes:
 
 If traceability, reproducibility, or validation changes, publish a new revision.
 
-### 4.3 Re-testing Policy
+### 4.3 Re-testing Policy (Failure)
 If a previously printed object is re-measured or re-evaluated (even without geometry change), this SHALL be recorded as a new revision.
 
-## 5. Canonical Folder Structure (Minimal Depth)
+## 5. Canonical Folder Structure (Minimal Depth) (Failure)
 All folder and file names SHALL be strict lowercase.
+
+### 5.1 Repository Roots (Failure)
+The repository is organized into distinct root directories based on the lifecycle of the files.
+
+* **Documentation Root (`docs/`):** Long-form documentation, user guides, and the coffee table book assets.
+* **Source Root (`src/`):** Active OpenSCAD development and design logic.
+* **Templates Root (`templates/`):** Reusable OpenSCAD modules and configuration templates.
+* **Release Root (`output/prints/`):** Canonical location for finalized releases and archival.
+
+#### Rule: docs root (Failure)
+`docs/` MUST exist and is the canonical documentation root.
+
+#### Rule: src root (Failure)
+`src/` MUST exist and is the source development root.
+
+#### Rule: templates root (Failure)
+`templates/` MUST exist and is the shared template root.
+
+#### Rule: output prints root (Failure)
+`output/prints/` MUST exist and is the release root.
+
+### 5.2 Release Structure (Failure)
 
 ```
 output/
@@ -74,10 +100,10 @@ output/
 
       source/
         source.zip
-        render_iso.png
-        render_side.png
-        preview_iso.png
-        preview_side.png
+        render_iso.<ext>
+        render_side.<ext>
+        preview_iso.<ext>
+        preview_side.<ext>
 
       model.stl              (required for physical/online/production; forbidden for prototype)
       slicer.3mf             (required for physical/production; forbidden for prototype/online)
@@ -99,23 +125,23 @@ output/
           physical-tests-results.json
 ```
 
-## 6. File Requirements by Scope
+## 6. File Requirements by Scope (Failure)
 
-### 6.1 Prototype Scope (`prototype`)
+### 6.1 Prototype Scope (`prototype`) (Failure)
 Required:
 - `metadata.json`
 - `source/source.zip`
-- `source/render_iso.png`
-- `source/render_side.png`
-- `source/preview_iso.png`
-- `source/preview_side.png`
+- `source/render_iso.<ext>`
+- `source/render_side.<ext>`
+- `source/preview_iso.<ext>`
+- `source/preview_side.<ext>`
 
 MUST NOT exist:
 - `model.stl`
 - `slicer.3mf`
 - `tests/`
 
-### 6.2 Physical Scope (`physical`)
+### 6.2 Physical Scope (`physical`) (Failure)
 Required:
 - All prototype-required artifacts
 - `model.stl`
@@ -126,7 +152,7 @@ Required:
 MUST NOT exist:
 - `tests/online/`
 
-### 6.3 Online Scope (`online`)
+### 6.3 Online Scope (`online`) (Failure)
 Required:
 - All prototype-required artifacts
 - `model.stl`
@@ -137,7 +163,7 @@ MUST NOT exist:
 - `slicer.3mf`
 - `tests/physical/`
 
-### 6.4 Production Scope (`production`)
+### 6.4 Production Scope (`production`) (Failure)
 Required:
 - All prototype-required artifacts
 - `model.stl`
@@ -147,9 +173,9 @@ Required:
 - `tests/physical/` full photo set
 - `tests/physical/physical-tests-results.json`
 
-## 7. Rendering and Preview Requirements
-- `source/render_*.png` SHALL correspond to OpenSCAD F6 renders.
-- `source/preview_*.png` SHALL correspond to OpenSCAD F5 previews.
+## 7. Rendering and Preview Requirements (Failure)
+- `source/render_*.<ext>` SHALL correspond to OpenSCAD F6 renders.
+- `source/preview_*.<ext>` SHALL correspond to OpenSCAD F5 previews.
 
 Both categories MUST include:
 - `*_iso.png` - isometric view
@@ -157,31 +183,31 @@ Both categories MUST include:
 
 All four images are mandatory for every revision.
 
-## 8. STL and Slicer Derivation Rules
+## 8. STL and Slicer Derivation Rules (Failure)
 
-### 8.1 STL Requirement
+### 8.1 STL Requirement (Failure)
 - `model.stl` SHALL be required for `physical`, `online`, and `production`.
 - `model.stl` SHALL be forbidden for `prototype`.
 
-### 8.2 Slicer Requirement
+### 8.2 Slicer Requirement (Failure)
 - `slicer.3mf` SHALL be required for `physical` and `production`.
 - `slicer.3mf` SHALL be forbidden for `prototype` and `online`.
 
-### 8.3 Derivation Constraint
+### 8.3 Derivation Constraint (Failure)
 If `slicer.3mf` exists:
 - It SHALL be derived from `model.stl`.
 - `model.stl` SHALL represent the exact geometry used for slicing.
 
-## 9. Test Capture Requirements
+## 9. Test Capture Requirements (Failure)
 
-### 9.1 Online Testing
+### 9.1 Online Testing (Failure)
 Required files:
 - `tests/online/result-extract.zip`
 - `tests/online/online-tests-results.json`
 
 Online testing SHALL NOT include physical measurements.
 
-### 9.2 Physical Testing
+### 9.2 Physical Testing (Failure)
 Required files:
 - `front.jpg`
 - `left.jpg`
@@ -199,9 +225,9 @@ Photo rules:
 - Full set required for all physical revisions, including failures.
 - Retakes require new revision.
 
-## 10. JSON Standards
+## 10. JSON Standards (Failure)
 
-### 10.1 Timestamp Format
+### 10.1 Timestamp Format (Failure)
 All timestamps stored in JSON SHALL be ISO 8601 UTC.
 
 Example:
@@ -209,14 +235,14 @@ Example:
 2026-02-12T18:25:43Z
 ```
 
-### 10.2 Schema Versioning
+### 10.2 Schema Versioning (Failure)
 All test result JSON files SHALL include:
 ```
 schema_version
 ```
 Schema changes SHALL increment `schema_version`.
 
-## 11. metadata.json Requirements
+## 11. metadata.json Requirements (Failure)
 `metadata.json` is mandatory for every revision.
 
 Required fields:
@@ -246,12 +272,12 @@ Additional required promotion fields:
 No checksum enforcement required.
 No deprecation flag required.
 
-## 12. Source Archive Policy (`source.zip`)
+## 12. Source Archive Policy (`source.zip`) (Failure)
 - `source.zip` SHALL contain all files necessary to reproduce the model and derived artifacts.
 - Dependencies and assets SHALL be included.
 - `source.zip` SHALL be treated as the authoritative source snapshot for that revision.
 
-## 13. Printer Hardware Rule
+## 13. Printer Hardware Rule (Failure)
 If printer hardware changes (even with identical `model.stl` and `slicer.3mf`), a new revision SHALL be published. Printer identity SHALL be recorded in `physical-tests-results.json`.
 
 Hardware changes requiring a new physical revision:
@@ -260,7 +286,7 @@ Hardware changes requiring a new physical revision:
 - Cooling modifications
 - Major firmware type changes (for example, Marlin -> Klipper)
 
-## 14. Branching Policy
+## 14. Branching Policy (Failure)
 Parallel experimentation SHALL occur outside:
 
 ```
@@ -287,7 +313,7 @@ Publishing from branches:
 
 If multiple branches are ready simultaneously, publish them as separate sequential revisions. Publication order defines revision order.
 
-## 15. complete.flag Semantics
+## 15. complete.flag Semantics (Failure)
 - Written last by the Windows publish script.
 - Required before GAS ingestion.
 - Indicates artifact freeze, not evidence completion.
@@ -303,7 +329,7 @@ If multiple branches are ready simultaneously, publish them as separate sequenti
   - A hard fail occurs only if a CODEOWNER has already finalized `status = passed`.
 - Evidence append authorization: any contributor may append evidence within the window.
 
-## 16. Revision Creation vs Promotion
+## 16. Revision Creation vs Promotion (Failure)
 - `prototype -> physical` is a source-to-artifact transition and is a new revision without lineage requirements.
 - Promotion is strictly the path: `physical -> online -> production`.
 - Promotion always creates a new revision. Ancestor revisions are never edited.
@@ -311,7 +337,7 @@ If multiple branches are ready simultaneously, publish them as separate sequenti
 - If ancestor `status` is not `passed`, mandatory confirmation is required.
 - Workflow details: see [promotion-policy.md](promotion-policy.md).
 
-### 16.1 Exception: `physical -> production`
+### 16.1 Exception: `physical -> production` (Failure)
 - Default: not allowed.
 - Exception requires all of the following:
   - `metadata.json.override_reason` is populated.
@@ -321,16 +347,16 @@ If multiple branches are ready simultaneously, publish them as separate sequenti
     - `physical_ancestor_revision_id = physical_revision_id`
     - `online_ancestor_revision_id = null`
 
-## 17. Lineage Fields
-### 17.1 online revision metadata
+## 17. Lineage Fields (Failure)
+### 17.1 online revision metadata (Failure)
 - `promoted_from = physical_revision_id`
 
-### 17.2 production revision metadata
+### 17.2 production revision metadata (Failure)
 - `promoted_from = online_revision_id`
 - `physical_ancestor_revision_id`
 - `online_ancestor_revision_id`
 
-## 18. Parameter Delta Requirement
+## 18. Parameter Delta Requirement (Failure)
 - "Assumptions" are the OpenSCAD parameter values used to generate the model.
 - If online assumptions differ from physical assumptions, `metadata.json.parameter_delta` is required.
 - `parameter_delta` structure:
@@ -338,7 +364,7 @@ If multiple branches are ready simultaneously, publish them as separate sequenti
   - `<value>` may be a number, string, boolean, or null.
 - Ledger column mirror: `parameter_deltas`.
 
-## 19. Ledger Model
+## 19. Ledger Model (Info)
 The ledger specification is defined in [ledger-spec.md](ledger-spec.md).
 
 Summary of required fields in the revisions tab:
@@ -361,7 +387,7 @@ Summary of required fields in the revisions tab:
 - `online_notes_count` (formula-driven)
 - `status` (user-maintained)
 
-## 20. GAS Sync Rules
+## 20. GAS Sync Rules (Failure)
 - Restrict Drive search to `prints_root_folder_id`.
 - Ingest only folders that contain `complete.flag`.
 - Validate required artifacts per scope.
@@ -371,7 +397,7 @@ Summary of required fields in the revisions tab:
 - If artifacts are incomplete: skip ingestion and optionally record `sync_pending` as a sync result in the sync_results tab.
 - Never overwrite user-maintained `status`.
 
-## 21. Status Lifecycle
+## 21. Status Lifecycle (Failure)
 Allowed status values:
 - `artifacts_ready`
 - `evidence_logged`
@@ -391,9 +417,9 @@ Status transition rules:
 
 `sync_pending` is not a `revisions.status` value.
 
-## 22. Breaking Change Definition
+## 22. Breaking Change Definition (Info)
 - A breaking change violates the Envelope Constraint: the new artifact cannot be swapped into an existing assembly without modifying adjacent modules or the baseplate.
 
-## 23. Branch Archival Policy
+## 23. Branch Archival Policy (Info)
 - Branch inactivity is defined by the associated Pull Request.
 - If there are no new commits or comments for 30 days, the branch is eligible for archival.

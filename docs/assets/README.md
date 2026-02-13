@@ -9,10 +9,12 @@ All images are documentation artifacts. They are separated by intent and trust l
 - Contains ONE conceptual image representing the final imagined product.
 - Aspirational but aligned to current geometry.
 - Not tied to <variant>-<release>.
-- Default filename:
-  tentacle-vision.png
-- If the vision changes materially:
-  tentacle-vision-v2.png
+- Vision filenames must include a suffix:
+  vision-<suffix>.<ext>
+- Examples:
+  vision-v1.png
+  vision-v2.jpg
+  vision-final.webp
 
 ### docs/assets/renders/
 - Photorealistic or visual outputs derived from a specific geometry state.
@@ -34,15 +36,16 @@ Pattern:
 ```
 
 - variant (example: s33)
-- release (example: r01)
+- release (example: r01; matches the rNN segment of the revision id)
 - view (iso, side, top, front, section, detail)
 - type (render, dim, clean, wireframe, closeup)
-- extension guidance (png/jpg/svg)
+- extension guidance (png/jpg)
+- All tokens must be lowercase and hyphen-delimited.
 
 ## Examples
 
 ```
-tentacle-vision.png
+vision-v1.png
 s33-r01-iso-render.png
 s33-r01-iso-dim.png
 s33-r01-side-dim.png
@@ -58,6 +61,7 @@ DO:
 - Bump release when geometry changes.
 - Update drawings and renders when release changes.
 - Keep filenames consistent.
+- Keep filenames lowercase.
 
 DON’T:
 - Add new subfolders under docs/assets/ without explicit decision.

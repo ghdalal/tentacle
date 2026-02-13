@@ -14,7 +14,7 @@ Define requirements for validation before or during GAS ingestion.
 ## Revision Identity Validation
 - Must validate folder name format: `print-YYYYMMDD-rNN-[scope]`.
 - Must validate `metadata.json.revision_id` equals folder name.
-- Must validate `revision_id` regex: `print-\d{8}-r\d+-[a-z]+`.
+- Must validate `revision_id` regex: `print-\d{8}-r\d+-(prototype|physical|online|production)`.
 
 ## Metadata Validation
 - Must reject malformed `metadata.json`.
