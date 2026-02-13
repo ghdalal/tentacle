@@ -20,6 +20,7 @@ Welcome to the Tentacle documentation portal. Use the sections below to find the
 
 ## Release
 - Versioning and immutability rules: [release/versioning.md](release/versioning.md)
+- Naming audit rules: [release/naming-audit-rules.md](release/naming-audit-rules.md#governance-rules)
 - Promotion policy: [release/promotion-policy.md](release/promotion-policy.md)
 - Runbook: [release/runbook.md](release/runbook.md)
 - Build and publish: [release/build-and-publish.md](release/build-and-publish.md)

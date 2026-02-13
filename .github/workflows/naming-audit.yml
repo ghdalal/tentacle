@@ -1,0 +1,182 @@
+name: Naming Audit
+
+on:
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+
+jobs:
+  naming-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Audit naming conventions
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          root="${GITHUB_WORKSPACE:-$(pwd)}"
+          violations=0
+          revision_re='^print-[0-9]{8}-r[0-9]+-(prototype|physical|online|production)$'
+          asset_name_re='^[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+(-[a-z0-9]+)*\.[a-z0-9]+$'
+
+          relpath() {
+            local path="$1"
+            if [[ "$path" == "$root/"* ]]; then
+              echo "${path#$root/}"
+            else
+              echo "$path"
+            fi
+          }
+
+          fail() {
+            echo "ERROR: $1"
+            violations=1
+          }
+
+          require_dir() {
+            local rel="$1"
+            if [[ ! -d "$root/$rel" ]]; then
+              fail "Required directory missing: $rel (See docs/release/naming-audit-rules.md#rule-${rel//\//-}-root)"
+            fi
+          }
+
+          is_lowercase_name() {
+            local name="$1"
+            [[ "$name" != *[A-Z]* ]]
+          }
+
+          echo "Checking required top-level directories..."
+          require_dir "docs"
+          require_dir "src"
+          require_dir "templates"
+          require_dir "output/prints"
+
+          echo "Checking OpenSCAD entrypoint rules..."
+          if [[ ! -f "$root/src/s33/assembly_s33.scad" ]]; then
+            fail "Missing default entry file: src/s33/assembly_s33.scad (See docs/release/naming-audit-rules.md#rule-s33-entry)"
+          fi
+          while IFS= read -r -d '' scad; do
+            fail "OpenSCAD entrypoints must live under src/<variant>/: $(relpath "$scad") (See docs/release/naming-audit-rules.md#rule-src-entrypoints-location)"
+          done < <(find "$root/src" -maxdepth 1 -type f -name "*.scad" -print0)
+
+          echo "Checking docs/assets structure..."
+          if [[ -d "$root/docs/assets" ]]; then
+            while IFS= read -r -d '' dir; do
+              base="$(basename "$dir")"
+              case "$base" in
+                vision|renders|drawings)
+                  ;;
+                *)
+                  fail "Unexpected docs/assets subfolder: $(relpath "$dir") (See docs/release/naming-audit-rules.md#rule-docs-assets-subfolders)"
+                  ;;
+              esac
+            done < <(find "$root/docs/assets" -mindepth 1 -maxdepth 1 -type d -print0)
+          fi
+
+          if [[ -d "$root/docs/assets/vision" ]]; then
+            while IFS= read -r -d '' file; do
+              base="$(basename "$file")"
+              case "$base" in
+                tentacle-vision.png|tentacle-vision-v2.png)
+                  ;;
+                *)
+                  fail "Invalid vision asset filename: $(relpath "$file") (See docs/release/naming-audit-rules.md#rule-vision-default-name, docs/release/naming-audit-rules.md#rule-vision-v2-name)"
+                  ;;
+              esac
+            done < <(find "$root/docs/assets/vision" -type f -print0)
+          fi
+
+          for asset_dir in renders drawings; do
+            if [[ -d "$root/docs/assets/$asset_dir" ]]; then
+              while IFS= read -r -d '' file; do
+                base="$(basename "$file")"
+                if [[ ! "$base" =~ $asset_name_re ]]; then
+                  fail "Invalid docs/assets/$asset_dir filename: $(relpath "$file") (See docs/release/naming-audit-rules.md#rule-docs-${asset_dir}-pattern)"
+                fi
+              done < <(find "$root/docs/assets/$asset_dir" -type f -print0)
+            fi
+          done
+
+          echo "Checking output/prints naming and structure..."
+          if [[ -d "$root/output/prints" ]]; then
+            while IFS= read -r -d '' entry; do
+              base="$(basename "$entry")"
+              if ! is_lowercase_name "$base"; then
+                fail "Uppercase name under output/prints: $(relpath "$entry") (See docs/release/naming-audit-rules.md#rule-prints-lowercase)"
+              fi
+            done < <(
+              find "$root/output/prints" -mindepth 1 \
+                -path "*/node_modules" -prune -o \
+                -path "*/.git" -prune -o \
+                -print0
+            )
+
+            while IFS= read -r -d '' dir; do
+              base="$(basename "$dir")"
+              if [[ ! "$base" =~ $revision_re ]]; then
+                fail "Invalid revision folder name under output/prints: $(relpath "$dir") (See docs/release/naming-audit-rules.md#rule-revision-folder-format, docs/release/naming-audit-rules.md#rule-revision-folder-regex, docs/release/naming-audit-rules.md#rule-revision-scope-values)"
+                continue
+              fi
+
+              if [[ ! -f "$dir/metadata.json" ]]; then
+                fail "Missing metadata.json in revision: $(relpath "$dir") (See docs/release/naming-audit-rules.md#rule-revision-id-match)"
+              else
+                revision_id="$(grep -oE '\"revision_id\"[[:space:]]*:[[:space:]]*\"[^\"]+\"' "$dir/metadata.json" | head -n 1 | sed -E 's/.*\"revision_id\"[[:space:]]*:[[:space:]]*\"([^\"]+)\".*/\\1/' || true)"
+                if [[ -z "$revision_id" ]]; then
+                  fail "Missing revision_id in metadata.json: $(relpath "$dir/metadata.json") (See docs/release/naming-audit-rules.md#rule-revision-id-match)"
+                elif [[ "$revision_id" != "$base" ]]; then
+                  fail "revision_id does not match folder name in $(relpath "$dir/metadata.json"): $revision_id (See docs/release/naming-audit-rules.md#rule-revision-id-match)"
+                fi
+              fi
+
+              if [[ ! -d "$dir/source" ]]; then
+                fail "Missing source/ in revision: $(relpath "$dir") (See docs/release/naming-audit-rules.md#rule-revision-subfolders)"
+              fi
+              if [[ ! -d "$dir/tests" ]]; then
+                fail "Missing tests/ in revision: $(relpath "$dir") (See docs/release/naming-audit-rules.md#rule-revision-subfolders)"
+              fi
+
+              for required in render_iso.png render_side.png preview_iso.png preview_side.png; do
+                if [[ ! -f "$dir/source/$required" ]]; then
+                  fail "Missing $required in $(relpath "$dir/source") (See docs/release/naming-audit-rules.md#rule-render-preview-names, docs/release/naming-audit-rules.md#rule-render-preview-views)"
+                fi
+              done
+
+              if [[ -d "$dir/tests" ]]; then
+                while IFS= read -r -d '' subdir; do
+                  subbase="$(basename "$subdir")"
+                  case "$subbase" in
+                    online|physical)
+                      ;;
+                    *)
+                      fail "Invalid tests subfolder name in $(relpath "$dir/tests"): $subbase (See docs/release/naming-audit-rules.md#rule-tests-subfolders)"
+                      ;;
+                  esac
+                done < <(find "$dir/tests" -mindepth 1 -maxdepth 1 -type d -print0)
+
+                if [[ -d "$dir/tests/online" ]]; then
+                  for required in online-tests-results.json result-extract.zip; do
+                    if [[ ! -f "$dir/tests/online/$required" ]]; then
+                      fail "Missing $required in $(relpath "$dir/tests/online") (See docs/release/naming-audit-rules.md#rule-online-test-results)"
+                    fi
+                  done
+                fi
+
+                if [[ -d "$dir/tests/physical" ]]; then
+                  if [[ ! -f "$dir/tests/physical/physical-tests-results.json" ]]; then
+                    fail "Missing physical-tests-results.json in $(relpath "$dir/tests/physical") (See docs/release/naming-audit-rules.md#rule-physical-test-results)"
+                  fi
+                fi
+              fi
+            done < <(find "$root/output/prints" -mindepth 1 -maxdepth 1 -type d -print0)
+          fi
+
+          if [[ "$violations" -ne 0 ]]; then
+            echo "Naming audit failed."
+            exit 1
+          fi
+
+          echo "Naming audit passed: no violations found."

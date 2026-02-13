@@ -3,6 +3,7 @@
 ## 0. Authority
 - This document is the Single Source of Truth (SSoT) for release governance and versioning rules.
 - `docs/README.md` is a portal; if a conflict exists, this document prevails.
+- Naming audit rules: [docs/release/naming-audit-rules.md](naming-audit-rules.md#governance-rules).
 
 ## 1. Revision Identity
 - Revision folder format: `output/prints/print-YYYYMMDD-rNN-[scope]/`
