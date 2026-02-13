@@ -23,7 +23,7 @@ SPREADSHEET_ID = '1eUlaAeK1Uq-7v_qRLIlsFU4HphGmG2hd_JVdtl78lGI'
 PRINTS_ROOT_FOLDER_ID = '1eq0sUx1rX4Xk9Mjh12D6apsdK7ZViP1l'
 
 # Placeholder for Component 2 (You will update this after deploying the GAS script)
-GAS_WEB_APP_URL = 'YOUR_GAS_WEB_APP_URL_HERE' 
+GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzndE6qGfXdZYGHNMOGOGA3DXf8657i2b7K9ILnhfohE39nL2XW1hXVo9wbqN9Qedon/exec_URL_HERE' 
 
 SCOPES = [
     'https://www.googleapis.com/auth/drive.file',
