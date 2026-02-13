@@ -277,7 +277,8 @@ def main():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
+            # FORCE CONSOLE MODE: This prints the URL and asks for a code
+            creds = flow.run_console()
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
 
@@ -292,3 +293,5 @@ def main():
         description = args.desc
     else:
         logs = EnvironmentGuard.get_git_logs
+if __name__ == "__main__":
+    main()
