@@ -9,7 +9,7 @@ def test_openscad_build():
     print("🚀 Testing OpenSCAD Artifact Generation...")
     
     # Define paths
-    scad_file = "src/main.scad" # Ensure this path matches your project
+    scad_file = "src/s33/main.scad" # Ensure this path matches your project
     output_dir = "output/prints/test_render"
     
     if not os.path.exists(scad_file):
