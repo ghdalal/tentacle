@@ -41,7 +41,7 @@
     },
     "git_tag": {
       "type": "string",
-      "pattern": "^T-r\\d+$"
+      "pattern": "^(T-r\\d+|s\\d{2}-r\\d+)$"
     },
     "git_commit": {
       "type": "string",
@@ -58,6 +58,18 @@
       "type": [
         "string",
         "null"
+      ]
+    },
+    "override_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "Emergency Field Repair",
+        "Legacy Validation Carryover",
+        "Component Criticality: Low",
+        null
       ]
     },
     "physical_ancestor_revision_id": {
@@ -77,7 +89,32 @@
     "parameter_delta": {
       "type": "object",
       "description": "Required when online assumptions differ from physical assumptions.",
-      "additionalProperties": true
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from",
+          "to"
+        ],
+        "properties": {
+          "from": {
+            "type": [
+              "number",
+              "string",
+              "boolean",
+              "null"
+            ]
+          },
+          "to": {
+            "type": [
+              "number",
+              "string",
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      }
     }
   },
   "allOf": [

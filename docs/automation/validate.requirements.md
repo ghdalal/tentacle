@@ -14,13 +14,15 @@ Define requirements for validation before or during GAS ingestion.
 ## Revision Identity Validation
 - Must validate folder name format: `print-YYYYMMDD-rNN-[scope]`.
 - Must validate `metadata.json.revision_id` equals folder name.
-- Must validate `revision_id` regex: `print-\d{8}-r\d+-[a-z]+`.
+- Must validate `revision_id` regex: `print-\d{8}-r\d+-(prototype|physical|online|production)`.
 
 ## Metadata Validation
 - Must reject malformed `metadata.json`.
 - Must validate lineage fields by scope:
   - `online`: `promoted_from = physical_revision_id`
-  - `production`: `promoted_from = online_revision_id`, `physical_ancestor_revision_id`, `online_ancestor_revision_id`
+  - `production`:
+    - Standard: `promoted_from = online_revision_id`, `physical_ancestor_revision_id`, `online_ancestor_revision_id`
+    - Exception: allow `promoted_from = physical_revision_id` only if `override_reason` is set and `online_ancestor_revision_id = null`
 - If online assumptions differ from physical assumptions, must require `metadata.json.parameter_delta`.
 
 ## Artifact Validation by Scope

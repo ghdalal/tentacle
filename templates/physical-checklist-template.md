@@ -2,7 +2,7 @@
 
 ## Revision
 - Revision ID: `print-YYYYMMDD-rNN-physical`
-- Git tag: `T-rNN`
+- Git tag: `sXX-rNN` (legacy `T-rNN` allowed for existing releases)
 - Git commit:
 - Publication date (UTC):
 
@@ -16,10 +16,11 @@
 - [ ] `metadata.json` exists and parses.
 - [ ] `source/` exists.
 - [ ] `complete.flag` was written last.
+- [ ] `physical-tests-results.json` includes `printer_id`.
 
 ## Governance
 - [ ] Folder name matches `metadata.json.revision_id`.
-- [ ] Tag `T-rNN` does not already exist before publish.
+- [ ] Tag does not already exist before publish.
 - [ ] No rebase/amend/force-push used after first tag.
 
 ## Ledger
