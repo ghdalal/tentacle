@@ -1,27 +1,33 @@
-# Tentacle
+# Tentacle: A Parametric Verticality Study
+> **Ecosystem:** [Gridfinity](https://gridfinity.xyz/) | **Engine:** OpenSCAD | **Release Status:** `v0.3.3-alpha`
 
-This is a compact, vertical organizer designed for the **Gridfinity** ecosystem. By utilizing a high-density mixed loading pattern, it maximizes your workspace—bringing tools off the desk and into reach.
-| Concept Vision | 1st Prototype at 33% scale |
+---
+
+## 1.0 System Abstract
+The **Tentacle** is a high-density, vertical storage solution designed to reclaim desk real estate within the Gridfinity ecosystem. By employing a high-density mixed loading pattern, it transitions tools from a horizontal footprint into a vertically accessible arc.
+
+### 1.1 Core Specifications
+* **Pitch:** Standard 42mm Gridfinity base compatibility.
+* **Logic:** Parametric OpenSCAD source allowing for modular scaling ($s_{33}$, $s_{50}$, $s_{100}$).
+* **Orientation:** Engineered gravity-assisted tool retention via curved geometry.
+
+---
+
+## 2.0 Design Validation
+The project follows a "Vision-to-Validation" pipeline. Each revision is rendered for intent and then printed at scale to verify structural tolerances.
+
+| 0.1 Design Intent (Concept Render) | 0.2 Physical Validation (s33 Prototype) |
 | :--- | :--- |
-| ![Tentacle vision](docs/assets/vision/tentacle-vision.png) | <img src="docs/assets/vision/tentacle-s33.jpg" width="400" /> |
+| <img src="docs/assets/vision/tentacle-vision.png" width="450" alt="Tentacle Vision Render" /> | <img src="docs/assets/vision/tentacle-s33.jpg" alt="Tentacle s33 Physical Prototype" /> |
 
-## Get Started
-- Documentation portal: [docs/README.md](docs/README.md)
-- Source layout: [src/README.md](src/README.md)
-- Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
-- Naming audit rules: [docs/release/naming-audit-rules.md](docs/release/naming-audit-rules.md#governance-rules)
+---
 
-## Releases
-- Published releases live under `output/prints/` and are immutable.
-- Do not modify or move any files under `output/prints/`.
+## 3.0 Repository Architecture
+This repository is organized as a manufacturing pipeline. Files flow from logical definitions (`src/`) through validation (`templates/`) to immutable artifacts (`output/`).
 
-## Tagging Convention
-- Future release tags use `sXX-rNN` (for example, `s33-r01`, `s50-r01`).
-- Tags reference specific commits per variant and are immutable pointers into history.
-- Legacy tags may use `T-rNN` and remain valid for existing releases.
-
-## Repository Layout (High Level)
-- `docs/` - product, manufacturing, release, assets and automation documentation
-- `src/` - OpenSCAD sources organized by variant
-- `templates/` - JSON schemas and checklists
-- `output/prints/` - immutable published revisions
+```text
+.
+├── docs/           # Specifications, Naming Audits, & Assets
+├── src/            # Parametric OpenSCAD source files
+├── templates/      # JSON Schemas and QC Checklists
+└── output/prints/  # Immutable Print-Ready Artifacts (STLs/3MFs)
