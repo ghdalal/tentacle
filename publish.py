@@ -64,7 +64,7 @@ class TentacleOrchestrator:
         print(f"🔨 [Build:{self.scope.upper()}] Initializing OpenSCAD...")
 
       
-            # 4-file Audit: 2 views (ISO, SIDE) x 2 modes (Preview, Render)
+            # 4-file Audit for ALL BUILDs: 2 views (ISO, SIDE) x 2 modes (Preview, Render)
         views = {"iso": "--camera=0,0,0,65,0,35,500", "side": "--camera=0,0,0,0,0,0,500"}
         for mode in ["preview", "render"]:
             for view, cam in views.items():
