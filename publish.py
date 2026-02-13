@@ -10,7 +10,7 @@ from datetime import datetime
 # Replace with your actual IDs from your Apps Script Deployment
 SHEET_ID = '1eUlaAeK1Uq-7v_qRLIlsFU4HphGmG2hd_JVdtl78lGI'
 PARENT_DRIVE_FOLDER_ID = 'YOUR_DRIVE_FOLDER_ID'
-WEB_APP_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL'
+WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzndE6qGfXdZYGHNMOGOGA3DXf8657i2b7K9ILnhfohE39nL2XW1hXVo9wbqN9Qedon/execRL'
 
 # Force immediate terminal feedback
 sys.stdout.reconfigure(line_buffering=True)
