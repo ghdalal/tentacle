@@ -10,8 +10,8 @@ from googleapiclient.http import MediaFileUpload
 
 # --- CONFIGURATION ---
 SHEET_ID = '1eUlaAeK1Uq-7v_qRLIlsFU4HphGmG2hd_JVdtl78lGI'
-PARENT_DRIVE_FOLDER_ID = 'YOUR_DRIVE_FOLDER_ID' # <-- Update this!
-WEB_APP_URL = 'YOUR_APPS_SCRIPT_WEBAPP_URL'   # <-- Update this!
+PARENT_DRIVE_FOLDER_ID = 'https://script.google.com/macros/s/AKfycbzndE6qGfXdZYGHNMOGOGA3DXf8657i2b7K9ILnhfohE39nL2XW1hXVo9wbqN9Qedon/execD' 
+WEB_APP_URL = '1eq0sUx1rX4Xk9Mjh12D6apsdK7ZViP1l'
 
 sys.stdout.reconfigure(line_buffering=True)
 
