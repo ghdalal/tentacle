@@ -13,7 +13,6 @@ from googleapiclient.http import MediaFileUpload
 SHEET_ID = '1eUlaAeK1Uq-7v_qRLIlsFU4HphGmG2hd_JVdtl78lGI'
 PARENT_DRIVE_FOLDER_ID = '1eq0sUx1rX4Xk9Mjh12D6apsdK7ZViP1l' 
 WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzndE6qGfXdZYGHNMOGOGA3DXf8657i2b7K9ILnhfohE39nL2XW1hXVo9wbqN9Qedon/exec'
-
 sys.stdout.reconfigure(line_buffering=True)
 
 class TentacleOrchestrator:
@@ -40,14 +39,14 @@ class TentacleOrchestrator:
         os.makedirs(out_dir, exist_ok=True)
         
         # Define Angle Sets
-        if self.scope == "prototype":
-            angles = {
-                "preview_iso": "--camera=0,0,0,65,0,35,500 --preview", 
-                "render_iso": "--camera=0,0,0,65,0,35,500",
-                "preview_top": "--camera=0,0,0,0,0,0,500 --preview", 
-                "render_top": "--camera=0,0,0,0,0,0,500"
-            }
-        else:
+        
+        angles = {
+            "preview_iso": "--camera=0,0,0,65,0,35,500 --preview", 
+            "render_iso": "--camera=0,0,0,65,0,35,500",
+            "preview_top": "--camera=0,0,0,0,0,0,500 --preview", 
+            "render_top": "--camera=0,0,0,0,0,0,500"
+        }
+        if self.scope == "physical":
             angles = {
                 "01_iso": "--camera=0,0,0,65,0,35,500", "02_top": "--camera=0,0,0,0,0,0,500",
                 "03_front": "--camera=0,0,0,90,0,0,500", "04_back": "--camera=0,0,0,90,0,180,500",
