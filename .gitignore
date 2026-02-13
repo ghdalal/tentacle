@@ -1,0 +1,7 @@
+credentials.json
+token.json
+counter.txt
+output/
+__pycache__/
+*.pyc
+.DS_Store
