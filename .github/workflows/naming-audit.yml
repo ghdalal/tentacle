@@ -1,5 +1,7 @@
 name: Naming Audit
-
+permissions:
+  contents: read
+  
 on:
   schedule:
    - cron: '0 18 * * 5'
